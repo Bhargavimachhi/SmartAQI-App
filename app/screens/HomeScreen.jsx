@@ -118,34 +118,41 @@ export default function HomeScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 p-4 bg-purple-100">
+    <ScrollView className="flex-1 p-4 bg-white">
       <View className="flex-row justify-between items-center mb-10">
         <View>
-          <Text className="text-2xl font-bold mb-1">Air Quality</Text>
+          <Text className="text-2xl font-bold mb-1 text-gray-900">
+            Air Quality
+          </Text>
           <View className="flex-row items-center space-x-2">
-            <Feather name="map-pin" size={20} className="mr-2" />
-            <Text>{aqiData?.location}</Text>
+            <Feather name="map-pin" size={20} color="#6b7280" />
+            <Text className="text-sm text-gray-600">{aqiData?.location}</Text>
           </View>
         </View>
       </View>
 
+      {/* AQI Box */}
       <View
-        className="bg-white p-14 rounded-xl mb-10"
-        style={{ borderColor: aqiColor }}
+        className="bg-white p-10 rounded-xl mb-10 border shadow-sm"
+        style={{ borderColor: aqiColor, borderWidth: 1 }}
       >
-        <Text className="text-5xl font-bold text-center my-1">
+        <Text className="text-5xl font-bold text-center my-1 text-gray-800">
           {aqiData.aqi}
         </Text>
-        <Text className="text-center font-bold" style={{ color: aqiColor }}>
+        <Text
+          className="text-center font-bold text-base"
+          style={{ color: aqiColor }}
+        >
           {getAQILabel(aqiData.aqi)}
         </Text>
-        <Text className="text-xs text-gray-500 text-center">
+        <Text className="text-xs text-gray-500 text-center mt-1">
           Last updated: {new Date(aqiData?.timestamp).toLocaleTimeString()}
         </Text>
       </View>
 
-      <View className="bg-white p-4 rounded-xl mb-10 p-5">
-        <Text className="text-xl font-bold text-base mb-5">
+      {/* Pollutant Levels */}
+      <View className="bg-white p-5 rounded-xl mb-10 border border-gray-200 shadow-sm">
+        <Text className="text-xl font-bold mb-5 text-gray-800">
           Pollutant Levels
         </Text>
         {[
@@ -157,82 +164,76 @@ export default function HomeScreen() {
           { name: "SO₂", value: aqiData.so2, max: 50 },
           { name: "CO", value: aqiData.co, max: 2 },
         ].map((item) => (
-          <View key={item.name} className="my-1">
-            <View className="flex-row justify-between m-1">
-              <Text>{item.name}</Text>
-              <Text>{item.value}</Text>
+          <View key={item.name} className="my-2">
+            <View className="flex-row justify-between mb-1">
+              <Text className="text-sm text-gray-700">{item.name}</Text>
+              <Text className="text-sm text-gray-700">{item.value}</Text>
             </View>
             <ProgressBar
               progress={item.value / item.max}
               color={aqiColor}
-              style={{ height: 6 }}
+              style={{ height: 6, borderRadius: 4 }}
             />
           </View>
         ))}
       </View>
 
-      <View className="bg-white p-4 rounded-xl mb-10 p-5">
-        <Text className="text-xl font-bold text-base mb-10">
+      {/* Weather Info */}
+      <View className="bg-white p-5 rounded-xl mb-10 border border-gray-200 shadow-sm">
+        <Text className="text-xl font-bold mb-6 text-gray-800">
           Weather Conditions
         </Text>
 
         <View className="flex-row flex-wrap justify-between">
-          <View className="w-[48%] flex-row items-center space-x-2 mb-8">
-            <Feather
-              name="thermometer"
-              size={25}
-              className="mr-3"
-              color="#ef4444"
-            />
-            <View>
-              <Text className="text-sm font-medium">
-                {aqiData?.weather?.temp}°C
-              </Text>
-              <Text className="text-xs text-gray-500">Temperature</Text>
+          {[
+            {
+              icon: "thermometer",
+              label: "Temperature",
+              value: `${aqiData?.weather?.temp}°C`,
+              color: "#ef4444",
+            },
+            {
+              icon: "droplet",
+              label: "Humidity",
+              value: `${aqiData?.weather?.humidity}%`,
+              color: "#3b82f6",
+            },
+            {
+              icon: "wind",
+              label: "Wind Speed",
+              value: `${aqiData?.weather?.windSpeed} km/h`,
+              color: "#22c55e",
+            },
+            {
+              icon: "eye",
+              label: "Surface Pressure",
+              value: aqiData?.weather?.pressure,
+              color: "#a855f7",
+            },
+          ].map((item, index) => (
+            <View
+              key={index}
+              className="w-[48%] flex-row items-center space-x-2 mb-6"
+            >
+              <Feather name={item.icon} size={24} color={item.color} />
+              <View>
+                <Text className="text-sm font-medium text-gray-800">
+                  {item.value}
+                </Text>
+                <Text className="text-xs text-gray-500">{item.label}</Text>
+              </View>
             </View>
-          </View>
-
-          <View className="w-[48%] flex-row items-center space-x-2 mb-8">
-            <Feather
-              name="droplet"
-              size={25}
-              className="mr-3"
-              color="#3b82f6"
-            />
-            <View>
-              <Text className="text-sm font-medium">
-                {aqiData?.weather?.humidity}%
-              </Text>
-              <Text className="text-xs text-gray-500">Humidity</Text>
-            </View>
-          </View>
-
-          <View className="w-[48%] flex-row items-center space-x-2 mb-8">
-            <Feather name="wind" size={25} className="mr-3" color="#22c55e" />
-            <View>
-              <Text className="text-sm font-medium">
-                {aqiData?.weather?.windSpeed} km/h
-              </Text>
-              <Text className="text-xs text-gray-500">Wind Speed</Text>
-            </View>
-          </View>
-
-          <View className="w-[48%] flex-row items-center space-x-2 mb-8">
-            <Feather name="eye" size={25} className="mr-3" color="#a855f7" />
-            <View>
-              <Text className="text-sm font-medium">
-                {aqiData?.weather?.pressure}
-              </Text>
-              <Text className="text-xs text-gray-500">Surface Pressure</Text>
-            </View>
-          </View>
+          ))}
         </View>
       </View>
 
-      <View className="bg-white p-4 rounded-xl mb-10">
-        <Text className="font-bold text-base mb-2">AI Health Tips</Text>
+      {/* Health Tips */}
+      <View className="bg-white p-5 rounded-xl mb-10 border border-gray-200 shadow-sm">
+        <Text className="font-bold text-base text-gray-800 mb-2">
+          AI Health Tips
+        </Text>
         {healthTips.map((tip, index) => (
-          <Text key={index} className="my-1">
+          <Text key={index} className="my-1 text-sm text-gray-700">
             ⚠️ {tip}
           </Text>
         ))}
