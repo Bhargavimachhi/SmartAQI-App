@@ -1,21 +1,17 @@
 import { Feather } from "@expo/vector-icons";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import {
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { ProgressBar } from "react-native-paper";
-import Loader from '../components/Loader'
+import Loader from "../components/Loader";
 
 const getAQIColorHex = (aqi) => {
-  if (aqi <= 50) return "#10B981";
-  if (aqi <= 100) return "#F59E0B";
-  if (aqi <= 150) return "#F97316";
-  if (aqi <= 200) return "#EF4444";
-  if (aqi <= 300) return "#8B5CF6";
-  return "#7C2D12";
+  if (aqi <= 50) return "#4ade80";
+  if (aqi <= 100) return "#15803d";
+  if (aqi <= 200) return "#facc15";
+  if (aqi <= 300) return "#f97316";
+  if (aqi <= 400) return "#ef4444";
+  return "#b91c1c";
 };
 
 const getAQILabel = (aqi) => {
@@ -106,7 +102,7 @@ export default function HomeScreen() {
             temp: dataObj["temperature"],
             humidity: dataObj["relative_humidity"],
             windSpeed: dataObj["wind_speed"],
-            pressure: dataObj["surface_pressure"]
+            pressure: dataObj["surface_pressure"],
           },
         };
         setAqiData(data);
@@ -117,20 +113,18 @@ export default function HomeScreen() {
     fetchAQIData();
   }, []);
 
-  if(!aqiData) {
+  if (!aqiData) {
     return <Loader text="Loading AQI Data..." />;
   }
 
   return (
-    <ScrollView className="flex-1 p-4 bg-blue-100">
+    <ScrollView className="flex-1 p-4 bg-purple-100">
       <View className="flex-row justify-between items-center mb-10">
         <View>
           <Text className="text-2xl font-bold mb-1">Air Quality</Text>
           <View className="flex-row items-center space-x-2">
             <Feather name="map-pin" size={20} className="mr-2" />
-            <Text>
-              {aqiData?.location}
-            </Text>
+            <Text>{aqiData?.location}</Text>
           </View>
         </View>
       </View>
@@ -235,7 +229,7 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <View className="bg-white p-4 rounded-xl mb-4">
+      <View className="bg-white p-4 rounded-xl mb-10">
         <Text className="font-bold text-base mb-2">AI Health Tips</Text>
         {healthTips.map((tip, index) => (
           <Text key={index} className="my-1">
