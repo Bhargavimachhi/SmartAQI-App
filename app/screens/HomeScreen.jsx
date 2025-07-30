@@ -1,14 +1,12 @@
 import { Feather } from "@expo/vector-icons";
-import React, { useState } from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   ScrollView,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { ProgressBar } from "react-native-paper";
-import RNPickerSelect from 'react-native-picker-select';
 
 const getAQIColorHex = (aqi) => {
   if (aqi <= 50) return "#10B981";
@@ -61,24 +59,7 @@ const getHealthTips = (aqi) => {
 };
 
 export default function HomeScreen() {
-  const [aqiData, setAqiData] = useState({
-    aqi: 87,
-    pm25: 34,
-    pm10: 58,
-    o3: 45,
-    no2: 23,
-    so2: 12,
-    co: 0.8,
-    location: "Delhi",
-    timestamp: new Date().toISOString(),
-    weather: {
-      temp: 28,
-      humidity: 65,
-      windSpeed: 12,
-      visibility: 8,
-    },
-  });
-  const [selectedLocation, setSelectedLocation] = useState(aqiData.location);
+  const [aqiData, setAqiData] = useState(null);
   const LOCATIONS = [
     { label: "Ahmedabad", value: "Ahmedabad" },
     { label: "Mumbai", value: "Mumbai" },
@@ -99,8 +80,45 @@ export default function HomeScreen() {
     setIsRefreshing(false);
   };
 
-  const healthTips = getHealthTips(aqiData.aqi);
-  const aqiColor = getAQIColorHex(aqiData.aqi);
+  const healthTips = getHealthTips(20);
+  const aqiColor = getAQIColorHex(20);
+
+  useEffect(() => {
+    async function fetchAQIData() {
+      try {
+        const res = await axios.get(
+          `https://aqi-api-m25p.vercel.app/air-quality?latitude=22.34&longitude=72.34`
+        );
+        const dataObj = res.data[0];
+        const data = {
+          aqi: dataObj["NearestAQI"],
+          pm25: dataObj["PM_2_Level"],
+          pm10: dataObj["PM_10_Level"],
+          o3: dataObj["O3_Level"],
+          no2: dataObj["NO2_Level"],
+          so2: dataObj["SO2_Level"],
+          co: dataObj["CO_Level"],
+          nh3: dataObj["NH3_Level"],
+          location: dataObj["StationName"],
+          timestamp: new Date().toISOString(),
+          weather: {
+            temp: dataObj["temperature"],
+            humidity: dataObj["relative_humidity"],
+            windSpeed: dataObj["wind_speed"],
+            pressure: dataObj["surface_pressure"]
+          },
+        };
+        setAqiData(data);
+      } catch (err) {
+        alert(err);
+      }
+    }
+    fetchAQIData();
+  }, []);
+
+  if(!aqiData) {
+    return;
+  }
 
   return (
     <ScrollView className="flex-1 p-4 bg-blue-100">
@@ -108,36 +126,12 @@ export default function HomeScreen() {
         <View>
           <Text className="text-2xl font-bold mb-1">Air Quality</Text>
           <View className="flex-row items-center space-x-2">
-            <Feather name="map-pin" size={14} />
-            <View className="border border-gray-300 rounded px-2 py-1">
-              <RNPickerSelect
-                value={selectedLocation}
-                onValueChange={(value) => console.log(value)}
-                items={LOCATIONS}
-                useNativeAndroidPickerStyle={false}
-                placeholder={{ label: "Select location", value: null }}
-                style={{
-                  inputIOS: { fontSize: 12, color: "#374151" },
-                  inputAndroid: { fontSize: 12, color: "#374151" },
-                }}
-                Icon={() => (
-                  <Feather name="chevron-down" size={14} color="#6b7280" />
-                )}
-              />
-            </View>
+            <Feather name="map-pin" size={20} className="mr-2" />
+            <Text>
+              {aqiData?.location}
+            </Text>
           </View>
         </View>
-
-        <TouchableOpacity
-          onPress={() => refreshData(selectedLocation)}
-          disabled={isRefreshing}
-        >
-          {isRefreshing ? (
-            <ActivityIndicator />
-          ) : (
-            <Feather name="refresh-ccw" size={20} />
-          )}
-        </TouchableOpacity>
       </View>
 
       <View
@@ -151,7 +145,7 @@ export default function HomeScreen() {
           {getAQILabel(aqiData.aqi)}
         </Text>
         <Text className="text-xs text-gray-500 text-center">
-          Last updated: {new Date(aqiData.timestamp).toLocaleTimeString()}
+          Last updated: {new Date(aqiData?.timestamp).toLocaleTimeString()}
         </Text>
       </View>
 
@@ -162,6 +156,7 @@ export default function HomeScreen() {
         {[
           { name: "PM2.5", value: aqiData.pm25, max: 100 },
           { name: "PM10", value: aqiData.pm10, max: 150 },
+          { name: "NH3", value: aqiData.nh3, max: 150 },
           { name: "O₃", value: aqiData.o3, max: 100 },
           { name: "NO₂", value: aqiData.no2, max: 80 },
           { name: "SO₂", value: aqiData.so2, max: 50 },
@@ -196,7 +191,7 @@ export default function HomeScreen() {
             />
             <View>
               <Text className="text-sm font-medium">
-                {aqiData.weather.temp}°C
+                {aqiData?.weather?.temp}°C
               </Text>
               <Text className="text-xs text-gray-500">Temperature</Text>
             </View>
@@ -211,7 +206,7 @@ export default function HomeScreen() {
             />
             <View>
               <Text className="text-sm font-medium">
-                {aqiData.weather.humidity}%
+                {aqiData?.weather?.humidity}%
               </Text>
               <Text className="text-xs text-gray-500">Humidity</Text>
             </View>
@@ -221,7 +216,7 @@ export default function HomeScreen() {
             <Feather name="wind" size={25} className="mr-3" color="#22c55e" />
             <View>
               <Text className="text-sm font-medium">
-                {aqiData.weather.windSpeed} km/h
+                {aqiData?.weather?.windSpeed} km/h
               </Text>
               <Text className="text-xs text-gray-500">Wind Speed</Text>
             </View>
@@ -231,9 +226,9 @@ export default function HomeScreen() {
             <Feather name="eye" size={25} className="mr-3" color="#a855f7" />
             <View>
               <Text className="text-sm font-medium">
-                {aqiData.weather.visibility} km
+                {aqiData?.weather?.pressure}
               </Text>
-              <Text className="text-xs text-gray-500">Visibility</Text>
+              <Text className="text-xs text-gray-500">Surface Pressure</Text>
             </View>
           </View>
         </View>
