@@ -4,9 +4,9 @@ import React from "react";
 import { StatusBar } from "react-native";
 import ForecastScreen from "./screens/ForecastScreen";
 import HeatMapScreen from "./screens/HeatMapScreen";
-import HistoryScreen from "./screens/HistoryScreen";
 import HomeScreen from "./screens/HomeScreen";
 import LanguageScreen from "./screens/LanguageScreen";
+import AQITrendsScreen from "./screens/AQITrendsScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -40,7 +40,7 @@ export default function Index() {
         <Tab.Screen name="Home" component={HomeScreen} />
         <Tab.Screen name="Forecast" component={ForecastScreen} />
         <Tab.Screen name="HeatMap" component={HeatMapScreen} />
-        <Tab.Screen name="Trends" component={HistoryScreen} />
+        <Tab.Screen name="Trends" component={AQITrendsScreen} />
         <Tab.Screen name="Language" component={LanguageScreen} />
       </Tab.Navigator>
     </>
