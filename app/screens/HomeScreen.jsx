@@ -57,51 +57,44 @@ const getHealthTips = (aqi) => {
 
 export default function HomeScreen() {
   const [aqiData, setAqiData] = useState(null);
-  const LOCATIONS = [
-    { label: "Ahmedabad", value: "Ahmedabad" },
-    { label: "Mumbai", value: "Mumbai" },
-    { label: "Delhi", value: "Delhi" },
-    { label: "Bengaluru", value: "Bengaluru" },
-  ];
-
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const refreshData = async () => {
-    setIsRefreshing(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setAqiData((prev) => ({
-      ...prev,
-      aqi: Math.floor(Math.random() * 200) + 50,
-      timestamp: new Date().toISOString(),
-    }));
-    setIsRefreshing(false);
-  };
-
-  const healthTips = getHealthTips(20);
-  const aqiColor = getAQIColorHex(20);
+  const [healthTips, setHealthTips] = useState(null);
+  const [aqiColor, setAqiColor] = useState(null);
 
   useEffect(() => {
     async function fetchAQIData() {
       try {
-        const res = await axios.get(
-          `https://aqi-api-m25p.vercel.app/air-quality?latitude=22.34&longitude=72.34`
-        );
-        const dataObj = res.data[0];
+        const res = await axios.post(`http://ec2-100-26-58-112.compute-1.amazonaws.com:8000/rural_aqi`, {
+          "lat" : 22.34,
+          "lon" : 72.34
+        });
+        // const dataObj = res.data[0];
+        const dataObj = {};
+
+        res.data["data"].forEach(item => {
+          dataObj[item.key] = item.value;
+        });
+
+        // Optionally include other fields like dominant pollutant and rural AQI
+        dataObj.dominant_pollutant = res.data.dominant_pollutant;
+        dataObj.rural_aqi = res.data.rural_aqi;
+        setAqiColor(getAQIColorHex(dataObj["rural_aqi"]));
+        setHealthTips(getHealthTips(dataObj["rural_aqi"]));
         const data = {
-          aqi: dataObj["NearestAQI"],
-          pm25: dataObj["PM_2_Level"],
-          pm10: dataObj["PM_10_Level"],
-          o3: dataObj["O3_Level"],
-          no2: dataObj["NO2_Level"],
-          so2: dataObj["SO2_Level"],
-          co: dataObj["CO_Level"],
-          nh3: dataObj["NH3_Level"],
-          location: dataObj["StationName"],
+          aqi: dataObj["rural_aqi"],
+          pm25: dataObj["PM2.5"],
+          pm10: dataObj["PM10"],
+          no2: dataObj["NO2"],
+          so2: dataObj["SO2"],
+          ozone: dataObj["OZONE"],
+          co: dataObj["CO"],
+          nh3: dataObj["NH3"],
+          dominantPollutant : dataObj["dominant_pollutant"],
           timestamp: new Date().toISOString(),
           weather: {
             temp: dataObj["temperature"],
             humidity: dataObj["relative_humidity"],
             windSpeed: dataObj["wind_speed"],
+            windDirection: dataObj["wind_direction"],
             pressure: dataObj["surface_pressure"],
           },
         };
@@ -159,7 +152,7 @@ export default function HomeScreen() {
           { name: "PM2.5", value: aqiData.pm25, max: 100 },
           { name: "PM10", value: aqiData.pm10, max: 150 },
           { name: "NH3", value: aqiData.nh3, max: 150 },
-          { name: "O₃", value: aqiData.o3, max: 100 },
+          { name: "Ozone", value: aqiData.ozone, max: 100 },
           { name: "NO₂", value: aqiData.no2, max: 80 },
           { name: "SO₂", value: aqiData.so2, max: 50 },
           { name: "CO", value: aqiData.co, max: 2 },
@@ -215,7 +208,7 @@ export default function HomeScreen() {
               key={index}
               className="w-[48%] flex-row items-center space-x-2 mb-6"
             >
-              <Feather name={item.icon} size={24} color={item.color} />
+              <Feather name={item.icon} size={24} color={item.color} className="mr-3" />
               <View>
                 <Text className="text-sm font-medium text-gray-800">
                   {item.value}
