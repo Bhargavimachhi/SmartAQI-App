@@ -32,7 +32,7 @@ export default function Index() {
               iconName = focused ? "language" : "language-outline";
             return <Ionicons name={iconName} size={size} color={color} />;
           },
-          tabBarActiveTintColor: "#2a9d8f",
+          tabBarActiveTintColor: "#3B82F6",
           tabBarInactiveTintColor: "gray",
           tabBarStyle: { paddingBottom: 5, height: 60 },
         })}

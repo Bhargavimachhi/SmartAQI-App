@@ -7,6 +7,7 @@ import {
   View,
 } from "react-native";
 import { ProgressBar } from "react-native-paper";
+import Loader from '../components/Loader'
 
 const getAQIColorHex = (aqi) => {
   if (aqi <= 50) return "#10B981";
@@ -117,7 +118,7 @@ export default function HomeScreen() {
   }, []);
 
   if(!aqiData) {
-    return;
+    return <Loader text="Loading AQI Data..." />;
   }
 
   return (
