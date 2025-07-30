@@ -95,6 +95,7 @@ export default function HomeScreen() {
             humidity: dataObj["relative_humidity"],
             windSpeed: dataObj["wind_speed"],
             windDirection: dataObj["wind_direction"],
+            cloudCover : dataObj["cloud_cover"],
             pressure: dataObj["surface_pressure"],
           },
         };
@@ -198,10 +199,22 @@ export default function HomeScreen() {
               color: "#22c55e",
             },
             {
+              icon: "wind",
+              label: "Wind Direction",
+              value: `${aqiData?.weather?.windDirection} `,
+              color: "#15803d",
+            },
+            {
               icon: "eye",
               label: "Surface Pressure",
               value: aqiData?.weather?.pressure,
               color: "#a855f7",
+            },
+            {
+              icon: "cloud",
+              label: "Cloud Cover",
+              value: aqiData?.weather?.cloudCover,
+              color: "#4f4f4fff",
             },
           ].map((item, index) => (
             <View
