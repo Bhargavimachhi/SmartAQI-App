@@ -1,10 +1,19 @@
 import { Feather } from "@expo/vector-icons";
 import axios from "axios";
+import * as Location from "expo-location";
+import { ChevronRight, MapPin } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import {
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import MapView, { Marker } from "react-native-maps";
 import { ProgressBar } from "react-native-paper";
 import Loader from "../components/Loader";
-import * as Location from 'expo-location';
 
 const getAQIColorHex = (aqi) => {
   if (aqi <= 50) return "#4ade80";
@@ -60,55 +69,95 @@ export default function HomeScreen() {
   const [aqiData, setAqiData] = useState(null);
   const [healthTips, setHealthTips] = useState(null);
   const [aqiColor, setAqiColor] = useState(null);
+  const [location, setLocation] = useState({
+    latitude: 22.3084577,
+    longitude: 73.2265893,
+    name: "Vadodara",
+  });
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const handleMapPress = async (e) => {
+    await fetchAQIFromLocation(
+      e.nativeEvent.coordinate.latitude,
+      e.nativeEvent.coordinate.longitude
+    );
+  };
+
+  const getAddressFromCoords = async (latitude, longitude) => {
+    try {
+      const [place] = await Location.reverseGeocodeAsync({
+        latitude,
+        longitude,
+      });
+      setLocation({
+        latitude: latitude,
+        longitude: longitude,
+        name: place.city + ", " + place.region + ", " + place.postalCode,
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  async function fetchAQIFromLocation(lat, lon) {
+    try {
+      const res = await axios.post(
+        `http://ec2-100-26-58-112.compute-1.amazonaws.com:8000/rural_aqi`,
+        {
+          lat: lat,
+          lon: lon,
+        }
+      );
+      getAddressFromCoords(lat, lon);
+      // const dataObj = res.data[0];
+      const dataObj = {};
+
+      res.data["data"].forEach((item) => {
+        dataObj[item.key] = item.value;
+      });
+
+      // Optionally include other fields like dominant pollutant and rural AQI
+      dataObj.dominant_pollutant = res.data.dominant_pollutant;
+      dataObj.rural_aqi = res.data.rural_aqi;
+      setAqiColor(getAQIColorHex(dataObj["rural_aqi"]));
+      setHealthTips(getHealthTips(dataObj["rural_aqi"]));
+      const data = {
+        aqi: dataObj["rural_aqi"],
+        pm25: dataObj["PM2.5"],
+        pm10: dataObj["PM10"],
+        no2: dataObj["NO2"],
+        so2: dataObj["SO2"],
+        ozone: dataObj["OZONE"],
+        co: dataObj["CO"],
+        nh3: dataObj["NH3"],
+        dominantPollutant: dataObj["dominant_pollutant"],
+        timestamp: new Date().toISOString(),
+        weather: {
+          temp: dataObj["temperature"],
+          humidity: dataObj["relative_humidity"],
+          windSpeed: dataObj["wind_speed"],
+          windDirection: dataObj["wind_direction"],
+          cloudCover: dataObj["cloud_cover"],
+          pressure: dataObj["surface_pressure"],
+        },
+      };
+      setAqiData(data);
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
   useEffect(() => {
-
     async function fetchAQIData() {
       try {
         let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          alert('Permission to access location was denied');
+        if (status !== "granted") {
+          alert("Permission to access location was denied");
           return;
         }
-  
+
         let loc = await Location.getCurrentPositionAsync({});
-        const res = await axios.post(`http://ec2-100-26-58-112.compute-1.amazonaws.com:8000/rural_aqi`, {
-          "lat" : loc.coords.latitude,
-          "lon" : loc.coords.longitude
-        });
-        // const dataObj = res.data[0];
-        const dataObj = {};
-
-        res.data["data"].forEach(item => {
-          dataObj[item.key] = item.value;
-        });
-
-        // Optionally include other fields like dominant pollutant and rural AQI
-        dataObj.dominant_pollutant = res.data.dominant_pollutant;
-        dataObj.rural_aqi = res.data.rural_aqi;
-        setAqiColor(getAQIColorHex(dataObj["rural_aqi"]));
-        setHealthTips(getHealthTips(dataObj["rural_aqi"]));
-        const data = {
-          aqi: dataObj["rural_aqi"],
-          pm25: dataObj["PM2.5"],
-          pm10: dataObj["PM10"],
-          no2: dataObj["NO2"],
-          so2: dataObj["SO2"],
-          ozone: dataObj["OZONE"],
-          co: dataObj["CO"],
-          nh3: dataObj["NH3"],
-          dominantPollutant : dataObj["dominant_pollutant"],
-          timestamp: new Date().toISOString(),
-          weather: {
-            temp: dataObj["temperature"],
-            humidity: dataObj["relative_humidity"],
-            windSpeed: dataObj["wind_speed"],
-            windDirection: dataObj["wind_direction"],
-            cloudCover : dataObj["cloud_cover"],
-            pressure: dataObj["surface_pressure"],
-          },
-        };
-        setAqiData(data);
+        await fetchAQIFromLocation(loc.coords.latitude, loc.coords.longitude);
       } catch (err) {
         alert(err);
       }
@@ -127,9 +176,49 @@ export default function HomeScreen() {
           <Text className="text-2xl font-bold mb-1 text-gray-900">
             Air Quality
           </Text>
-          <View className="flex-row items-center space-x-2">
-            <Feather name="map-pin" size={20} color="#6b7280" />
-            <Text className="text-sm text-gray-600">{aqiData?.location}</Text>
+          <View className="flex-1 bg-white p-4">
+            {/* Row with Location and Arrow */}
+            <TouchableOpacity
+              className="flex-row items-center justify-between border p-4 rounded-xl"
+              onPress={() => setModalVisible(true)}
+            >
+              <View className="flex-row items-center space-x-2">
+                <MapPin size={20} color="black" />
+                <Text className="text-base text-black">{location.name}</Text>
+              </View>
+              <ChevronRight size={20} color="gray" />
+            </TouchableOpacity>
+
+            {/* Modal Map Picker */}
+            <Modal visible={modalVisible} animationType="slide">
+              <View className="flex-1">
+                <MapView
+                  style={StyleSheet.absoluteFillObject}
+                  initialRegion={{
+                    latitude: location.latitude,
+                    longitude: location.longitude,
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
+                  }}
+                  onPress={handleMapPress}
+                >
+                  <Marker
+                    coordinate={location}
+                    draggable
+                    onDragEnd={(e) => setLocation(e.nativeEvent.coordinate)}
+                  />
+                </MapView>
+
+                <TouchableOpacity
+                  className="absolute bottom-10 left-5 right-5 bg-blue-600 p-4 rounded-xl"
+                  onPress={() => setModalVisible(false)}
+                >
+                  <Text className="text-white text-center font-semibold">
+                    Confirm Location
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </Modal>
           </View>
         </View>
       </View>
@@ -230,7 +319,12 @@ export default function HomeScreen() {
               key={index}
               className="w-[48%] flex-row items-center space-x-2 mb-6"
             >
-              <Feather name={item.icon} size={24} color={item.color} className="mr-3" />
+              <Feather
+                name={item.icon}
+                size={24}
+                color={item.color}
+                className="mr-3"
+              />
               <View>
                 <Text className="text-sm font-medium text-gray-800">
                   {item.value}
