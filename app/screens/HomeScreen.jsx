@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { ProgressBar } from "react-native-paper";
 import Loader from "../components/Loader";
+import * as Location from 'expo-location';
 
 const getAQIColorHex = (aqi) => {
   if (aqi <= 50) return "#4ade80";
@@ -61,11 +62,19 @@ export default function HomeScreen() {
   const [aqiColor, setAqiColor] = useState(null);
 
   useEffect(() => {
+
     async function fetchAQIData() {
       try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          alert('Permission to access location was denied');
+          return;
+        }
+  
+        let loc = await Location.getCurrentPositionAsync({});
         const res = await axios.post(`http://ec2-100-26-58-112.compute-1.amazonaws.com:8000/rural_aqi`, {
-          "lat" : 22.34,
-          "lon" : 72.34
+          "lat" : loc.coords.latitude,
+          "lon" : loc.coords.longitude
         });
         // const dataObj = res.data[0];
         const dataObj = {};

@@ -1,13 +1,34 @@
-import React from 'react';
-import { View, Text, Button } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import * as Location from 'expo-location';
+import { Text, View } from 'react-native';
 
 const LanguageScreen = () => {
+  const [location, setLocation] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Permission to access location was denied');
+        return;
+      }
+
+      let loc = await Location.getCurrentPositionAsync({});
+      console.log(loc);
+      setLocation(loc.coords);
+    })();
+  }, []);
+
   return (
-    <View style={{ padding: 20 }}>
-      <Text style={{ fontSize: 22 }}>Select Your Language</Text>
-      <Button title="English" onPress={() => alert('Language changed to English')} />
-      <Button title="हिन्दी" onPress={() => alert('भाषा हिंदी में बदली गई')} />
-      <Button title="ગુજરાતી" onPress={() => alert('ભાષા ગુજરાતીમાં બદલાઈ')} />
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      {location ? (
+        <>
+          <Text>Latitude: {location.latitude}</Text>
+          <Text>Longitude: {location.longitude}</Text>
+        </>
+      ) : (
+        <Text>Fetching location...</Text>
+      )}
     </View>
   );
 };
