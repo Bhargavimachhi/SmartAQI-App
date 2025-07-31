@@ -15,7 +15,7 @@ export default function Index() {
     <>
       <StatusBar barStyle="dark-content" />
       <Tab.Navigator
-        initialRouteName="Home"
+        initialRouteName="Trends"
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarIcon: ({ focused, color, size }) => {
