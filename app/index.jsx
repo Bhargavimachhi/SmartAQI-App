@@ -2,11 +2,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import React from "react";
 import { StatusBar } from "react-native";
+import AQITrendsScreen from "./screens/AQITrendsScreen";
 import ForecastScreen from "./screens/ForecastScreen";
 import HeatMapScreen from "./screens/HeatMapScreen";
 import HomeScreen from "./screens/HomeScreen";
-import LocationPickerScreen from "./screens/LocationPickerScreen";
-import AQITrendsScreen from "./screens/AQITrendsScreen";
+import SettingsScreen from "./screens/SettingsScreen"
 
 const Tab = createBottomTabNavigator();
 
@@ -28,8 +28,8 @@ export default function Index() {
               iconName = focused ? "locate" : "locate-outline";
             else if (route.name === "Trends")
               iconName = focused ? "map" : "map-outline";
-            else if (route.name === "Location")
-              iconName = focused ? "language" : "language-outline";
+            else if (route.name === "Settings")
+              iconName = focused ? "settings" : "settings-outline";
             return <Ionicons name={iconName} size={size} color={color} />;
           },
           tabBarActiveTintColor: "#a855f7",
@@ -41,7 +41,7 @@ export default function Index() {
         <Tab.Screen name="Forecast" component={ForecastScreen} />
         <Tab.Screen name="HeatMap" component={HeatMapScreen} />
         <Tab.Screen name="Trends" component={AQITrendsScreen} />
-        <Tab.Screen name="Location" component={LocationPickerScreen} />
+        <Tab.Screen name="Settings" component={SettingsScreen} />
       </Tab.Navigator>
     </>
   );
