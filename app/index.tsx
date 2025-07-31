@@ -5,7 +5,7 @@ import { StatusBar } from "react-native";
 import ForecastScreen from "./screens/ForecastScreen";
 import HeatMapScreen from "./screens/HeatMapScreen";
 import HomeScreen from "./screens/HomeScreen";
-import LanguageScreen from "./screens/LanguageScreen";
+import LocationPickerScreen from "./screens/LocationPickerScreen";
 import AQITrendsScreen from "./screens/AQITrendsScreen";
 
 const Tab = createBottomTabNavigator();
@@ -28,7 +28,7 @@ export default function Index() {
               iconName = focused ? "locate" : "locate-outline";
             else if (route.name === "Trends")
               iconName = focused ? "map" : "map-outline";
-            else if (route.name === "Language")
+            else if (route.name === "Location")
               iconName = focused ? "language" : "language-outline";
             return <Ionicons name={iconName} size={size} color={color} />;
           },
@@ -41,7 +41,7 @@ export default function Index() {
         <Tab.Screen name="Forecast" component={ForecastScreen} />
         <Tab.Screen name="HeatMap" component={HeatMapScreen} />
         <Tab.Screen name="Trends" component={AQITrendsScreen} />
-        <Tab.Screen name="Language" component={LanguageScreen} />
+        <Tab.Screen name="Location" component={LocationPickerScreen} />
       </Tab.Navigator>
     </>
   );
