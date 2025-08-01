@@ -75,11 +75,20 @@ export default function HomeScreen() {
     name: "Vadodara",
   });
   const [modalVisible, setModalVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const handleMapPress = async (e) => {
-    await fetchAQIFromLocation(
+    await getAddressFromCoords(
       e.nativeEvent.coordinate.latitude,
       e.nativeEvent.coordinate.longitude
+    );
+  };
+
+  const handleConfirmLocation = async (e) => {
+    setModalVisible(false);
+    await fetchAQIFromLocation(
+      location.latitude,
+      location.longitude
     );
   };
 
@@ -101,6 +110,7 @@ export default function HomeScreen() {
 
   async function fetchAQIFromLocation(lat, lon) {
     try {
+      setLoading(true);
       const res = await axios.post(
         `http://ec2-100-26-58-112.compute-1.amazonaws.com:8000/rural_aqi`,
         {
@@ -108,7 +118,7 @@ export default function HomeScreen() {
           lon: lon,
         }
       );
-      getAddressFromCoords(lat, lon);
+      await getAddressFromCoords(lat, lon);
       // const dataObj = res.data[0];
       const dataObj = {};
 
@@ -142,6 +152,7 @@ export default function HomeScreen() {
         },
       };
       setAqiData(data);
+      setLoading(false);
     } catch (err) {
       console.log(err);
     }
@@ -165,8 +176,8 @@ export default function HomeScreen() {
     fetchAQIData();
   }, []);
 
-  if (!aqiData) {
-    return <Loader text="Loading AQI Data..." />;
+  if (loading) {
+    return <Loader text="Loading Data..." />;
   }
 
   return (
@@ -211,7 +222,7 @@ export default function HomeScreen() {
 
                 <TouchableOpacity
                   className="absolute bottom-10 left-5 right-5 bg-blue-600 p-4 rounded-xl"
-                  onPress={() => setModalVisible(false)}
+                  onPress={handleConfirmLocation}
                 >
                   <Text className="text-white text-center font-semibold">
                     Confirm Location
