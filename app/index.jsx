@@ -6,7 +6,8 @@ import AQITrendsScreen from "./screens/AQITrendsScreen";
 import ForecastScreen from "./screens/ForecastScreen";
 import HeatMapScreen from "./screens/HeatMapScreen";
 import HomeScreen from "./screens/HomeScreen";
-import SettingsScreen from "./screens/SettingsScreen"
+import SettingsScreen from "./screens/SettingsScreen";
+import AQIColoredMap from "./screens/AQIColoredMap";
 
 const Tab = createBottomTabNavigator();
 
@@ -26,6 +27,8 @@ export default function Index() {
               iconName = focused ? "trending-up" : "trending-up-outline";
             else if (route.name === "HeatMap")
               iconName = focused ? "locate" : "locate-outline";
+            else if (route.name === "AQIColoredMap")
+              iconName = focused ? "compass" : "compass-outline";
             else if (route.name === "Trends")
               iconName = focused ? "map" : "map-outline";
             else if (route.name === "Settings")
@@ -40,6 +43,7 @@ export default function Index() {
         <Tab.Screen name="Home" component={HomeScreen} />
         <Tab.Screen name="Forecast" component={ForecastScreen} />
         <Tab.Screen name="HeatMap" component={HeatMapScreen} />
+        <Tab.Screen name="AQIColoredMap" component={AQIColoredMap} />
         <Tab.Screen name="Trends" component={AQITrendsScreen} />
         <Tab.Screen name="Settings" component={SettingsScreen} />
       </Tab.Navigator>
