@@ -1,0 +1,27 @@
+{
+  "settingspage": {
+    "title": "सेटिंग्स",
+    "location_settings": "स्थान सेटिंग्स",
+    "location_access": "स्थान की अनुमति",
+    "location_access_desc": "सटीक डेटा के लिए ऐप को स्थान एक्सेस करने दें",
+    "enter_custom_location": "शहर या निर्देशांक दर्ज करें",
+
+    "notifications_title": "सूचनाएँ",
+    "enable_notifications": "सूचनाएँ सक्षम करें",
+    "enable_notifications_desc": "वायु गुणवत्ता अलर्ट और अपडेट्स",
+    "health_alerts": "स्वास्थ्य अलर्ट्स",
+    "health_alerts_desc": "खतरनाक स्थितियों पर चेतावनी दें",
+    "aqi_threshold": "AQI अलर्ट सीमा",
+
+    "display_language": "प्रदर्शन और भाषा",
+    "language": "भाषा"
+  },
+  "tabs": {
+    "home": "मुखपृष्ठ",
+    "forecast": "पूर्वानुमान",
+    "heatmap": "हीट मैप",
+    "colored_map": "रंगीन नक्शा",
+    "trends": "प्रवृत्तियाँ",
+    "settings": "सेटिंग्स"
+  }
+}

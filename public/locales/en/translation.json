@@ -1,0 +1,27 @@
+{
+  "settingspage": {
+    "title": "Settings",
+    "location_settings": "Location Settings",
+    "location_access": "Location Access",
+    "location_access_desc": "Allow app to access location for accurate data",
+    "enter_custom_location": "Enter city or coordinates",
+
+    "notifications_title": "Notifications",
+    "enable_notifications": "Enable Notifications",
+    "enable_notifications_desc": "Air quality alerts & updates",
+    "health_alerts": "Health Alerts",
+    "health_alerts_desc": "Warn on hazardous conditions",
+    "aqi_threshold": "AQI Alert Threshold",
+
+    "display_language": "Display & Language",
+    "language": "Language"
+  },
+  "tabs": {
+    "home": "Home",
+    "forecast": "Forecast",
+    "heatmap": "Heat Map",
+    "colored_map": "Colored Map",
+    "trends": "Trends",
+    "settings": "Settings"
+  }
+}
