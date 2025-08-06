@@ -1,43 +1,9 @@
-import React, { useState } from "react";
-import { Text, View, StyleSheet } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import MapView, { Marker } from "react-native-maps";
-
-// Sample AQI Data
-const aqiData = [
-  {
-    city: "Delhi",
-    lat: 28.6139,
-    lon: 77.209,
-    aqi: 180,
-    pm25: 90,
-    pm10: 110,
-  },
-  {
-    city: "Mumbai",
-    lat: 19.076,
-    lon: 72.8777,
-    aqi: 120,
-    pm25: 60,
-    pm10: 85,
-  },
-  {
-    city: "Bangalore",
-    lat: 12.9716,
-    lon: 77.5946,
-    aqi: 80,
-    pm25: 30,
-    pm10: 40,
-  },
-  {
-    city: "Ahmedabad",
-    lat: 23.0225,
-    lon: 72.5714,
-    aqi: 90,
-    pm25: 55,
-    pm10: 70,
-  },
-];
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
+import MapViewCluster from "react-native-map-clustering";
+import { Marker } from "react-native-maps";
 
 // Color function based on value
 const getColor = (value) => {
@@ -50,7 +16,36 @@ const getColor = (value) => {
 };
 
 const HeatMapScreen = () => {
-  const [selectedMetric, setSelectedMetric] = useState("aqi");
+  const [selectedMetric, setSelectedMetric] = useState("AQI");
+  const [aqiData, setAqiData] = useState([]);
+  const [region, setRegion] = useState({
+    latitude: 22.9734,
+    longitude: 78.6569,
+    latitudeDelta: 20,
+    longitudeDelta: 20,
+  });
+
+  async function getAllStationAqiData() {
+    try {
+      const res = await axios.get(
+        `http://ec2-3-92-135-32.compute-1.amazonaws.com:8000/getallstations`
+      );
+      const data = res.data;
+      const filteredAqiData = data.filter((point) => {
+        return (
+          Math.abs(point.lat - region.latitude) < region.latitudeDelta / 2 &&
+          Math.abs(point.lon - region.longitude) < region.longitudeDelta / 2
+        );
+      });
+      setAqiData(filteredAqiData);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  useEffect(() => {
+    getAllStationAqiData();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -69,7 +64,7 @@ const HeatMapScreen = () => {
       </View>
 
       {/* Map */}
-      <MapView
+      <MapViewCluster
         style={styles.map}
         initialRegion={{
           latitude: 22.9734,
@@ -77,6 +72,7 @@ const HeatMapScreen = () => {
           latitudeDelta: 20,
           longitudeDelta: 20,
         }}
+        clusterColor="#1e3a8a"
       >
         {aqiData.map((city, index) => {
           const value = city[selectedMetric];
@@ -104,7 +100,7 @@ const HeatMapScreen = () => {
             </Marker>
           );
         })}
-      </MapView>
+      </MapViewCluster>
     </View>
   );
 };
