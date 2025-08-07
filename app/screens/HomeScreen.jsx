@@ -179,15 +179,15 @@ export default function HomeScreen() {
 
   return (
     <ScrollView className="flex-1 p-4 bg-white">
-      <View className="flex-row justify-between items-center mb-10">
+      <View className="flex-row items-center justify-between mb-10">
         <View>
-          <Text className="text-2xl font-bold mb-1 text-gray-900">
+          <Text className="mb-1 text-2xl font-bold text-gray-900">
             Air Quality
           </Text>
-          <View className="flex-1 bg-white p-4">
+          <View className="flex-1 p-4 bg-white">
             {/* Row with Location and Arrow */}
             <TouchableOpacity
-              className="flex-row items-center justify-between border p-4 rounded-xl"
+              className="flex-row items-center justify-between p-4 border rounded-xl"
               onPress={() => setModalVisible(true)}
             >
               <View className="flex-row items-center space-x-2">
@@ -218,10 +218,10 @@ export default function HomeScreen() {
                 </MapView>
 
                 <TouchableOpacity
-                  className="absolute bottom-10 left-5 right-5 bg-blue-600 p-4 rounded-xl"
+                  className="absolute p-4 bg-blue-600 bottom-10 left-5 right-5 rounded-xl"
                   onPress={handleConfirmLocation}
                 >
-                  <Text className="text-white text-center font-semibold">
+                  <Text className="font-semibold text-center text-white">
                     Confirm Location
                   </Text>
                 </TouchableOpacity>
@@ -233,26 +233,26 @@ export default function HomeScreen() {
 
       {/* AQI Box */}
       <View
-        className="bg-white p-10 rounded-xl mb-10 border shadow-sm"
+        className="p-10 mb-10 bg-white border shadow-sm rounded-xl"
         style={{ borderColor: aqiColor, borderWidth: 1 }}
       >
-        <Text className="text-5xl font-bold text-center my-1 text-gray-800">
+        <Text className="my-1 text-5xl font-bold text-center text-gray-800">
           {aqiData.aqi}
         </Text>
         <Text
-          className="text-center font-bold text-base"
+          className="text-base font-bold text-center"
           style={{ color: aqiColor }}
         >
           {getAQILabel(aqiData.aqi)}
         </Text>
-        <Text className="text-xs text-gray-500 text-center mt-1">
+        <Text className="mt-1 text-xs text-center text-gray-500">
           Last updated: {new Date(aqiData?.timestamp).toLocaleTimeString()}
         </Text>
       </View>
 
       {/* Pollutant Levels */}
-      <View className="bg-white p-5 rounded-xl mb-10 border border-gray-200 shadow-sm">
-        <Text className="text-xl font-bold mb-5 text-gray-800">
+      <View className="p-5 mb-10 bg-white border border-gray-200 shadow-sm rounded-xl">
+        <Text className="mb-5 text-xl font-bold text-gray-800">
           Pollutant Levels
         </Text>
         {[
@@ -281,8 +281,8 @@ export default function HomeScreen() {
       </View>
 
       {/* Weather Info */}
-      <View className="bg-white p-5 rounded-xl mb-10 border border-gray-200 shadow-sm">
-        <Text className="text-xl font-bold mb-6 text-gray-800">
+      <View className="p-5 mb-10 bg-white border border-gray-200 shadow-sm rounded-xl">
+        <Text className="mb-6 text-xl font-bold text-gray-800">
           Weather Conditions
         </Text>
 
@@ -347,8 +347,8 @@ export default function HomeScreen() {
       </View>
 
       {/* Health Tips */}
-      <View className="bg-white p-5 rounded-xl mb-10 border border-gray-200 shadow-sm">
-        <Text className="font-bold text-base text-gray-800 mb-2">
+      <View className="p-5 mb-10 bg-white border border-gray-200 shadow-sm rounded-xl">
+        <Text className="mb-2 text-base font-bold text-gray-800">
           AI Health Tips
         </Text>
         {healthTips.map((tip, index) => (
