@@ -1,13 +1,15 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Picker } from "@react-native-picker/picker";
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Dimensions, ScrollView, Text, View } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { BarChart, LineChart } from "react-native-chart-kit";
 import { Card } from "react-native-paper";
+import Loader from "../components/Loader";
 import LocationPickerButton from "../components/LocationPickerButton";
 import LocationPickerMap from "../components/LocationPickerMap";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import Loader from "../components/Loader";
+import { PollutantBar } from "../components/PollutantBar";
 
 const screenWidth = Dimensions.get("window").width;
 const pollutants = ["aqi", "pm25", "co", "pm10", "no2", "so2", "o3"];
@@ -18,12 +20,124 @@ const aqiData = {
   "2025-07-10": 290,
 };
 
-const categoryDistribution = {
-  Good: 20,
-  Moderate: 40,
-  Unhealthy: 25,
-  VeryUnhealthy: 10,
-  Hazardous: 5,
+const getAQICategory = (v) =>
+  v <= 50
+    ? "Good"
+    : v <= 100
+    ? "Moderate"
+    : v <= 200
+    ? "Poor"
+    : v <= 300
+    ? "Unhealthy"
+    : v <= 400
+    ? "Severe"
+    : "Hazardous";
+const getPM25Category = (v) =>
+  v <= 30
+    ? "Good"
+    : v <= 60
+    ? "Moderate"
+    : v <= 90
+    ? "Poor"
+    : v <= 120
+    ? "Unhealthy"
+    : v <= 250
+    ? "Severe"
+    : "Hazardous";
+const getPM10Category = (v) =>
+  v <= 50
+    ? "Good"
+    : v <= 100
+    ? "Moderate"
+    : v <= 250
+    ? "Poor"
+    : v <= 350
+    ? "Unhealthy"
+    : v <= 430
+    ? "Severe"
+    : "Hazardous";
+const getCOCategory = (v) =>
+  v <= 1
+    ? "Good"
+    : v <= 2
+    ? "Moderate"
+    : v <= 10
+    ? "Poor"
+    : v <= 17
+    ? "Unhealthy"
+    : v <= 34
+    ? "Severe"
+    : "Hazardous";
+const getNO2Category = (v) =>
+  v <= 40
+    ? "Good"
+    : v <= 80
+    ? "Moderate"
+    : v <= 180
+    ? "Poor"
+    : v <= 280
+    ? "Unhealthy"
+    : v <= 400
+    ? "Severe"
+    : "Hazardous";
+const getSO2Category = (v) =>
+  v <= 40
+    ? "Good"
+    : v <= 80
+    ? "Moderate"
+    : v <= 380
+    ? "Poor"
+    : v <= 800
+    ? "Unhealthy"
+    : v <= 1600
+    ? "Severe"
+    : "Hazardous";
+const getO3Category = (v) =>
+  v <= 50
+    ? "Good"
+    : v <= 100
+    ? "Moderate"
+    : v <= 168
+    ? "Poor"
+    : v <= 208
+    ? "Unhealthy"
+    : v <= 748
+    ? "Severe"
+    : "Hazardous";
+
+const calculateCategoryDistribution = (data) => {
+  const pollutants = {
+    aqi: getAQICategory,
+    pm25: getPM25Category,
+    pm10: getPM10Category,
+    co: getCOCategory,
+    no2: getNO2Category,
+    so2: getSO2Category,
+    o3: getO3Category,
+  };
+
+  const distribution = {};
+
+  for (const pollutant in pollutants) {
+    distribution[pollutant] = {
+      Good: 0,
+      Moderate: 0,
+      Poor: 0,
+      Unhealthy: 0,
+      Severe: 0,
+      Hazardous: 0,
+    };
+  }
+
+  for (const item of data) {
+    for (const pollutant in pollutants) {
+      const value = item[pollutant];
+      const category = pollutants[pollutant](value);
+      distribution[pollutant][category]++;
+    }
+  }
+
+  return distribution;
 };
 
 const getAQIColorHex = (aqi) => {
@@ -58,78 +172,40 @@ const formatDateToShortMonth = (dateStr) => {
 const AQITrendsScreen = () => {
   const [selectedMetric, setSelectedMetric] = useState("aqi");
   const [showMap, setShowMap] = useState(false);
-  const weeklyData = [
-    {
-      date: "01-08-2025",
-      aqi: 120,
-      pm25: 60,
-      co: 0.9,
-      pm10: 90,
-      no2: 35,
-      so2: 12,
-      o3: 25,
-    },
-    {
-      date: "02-08-2025",
-      aqi: 160,
-      pm25: 80,
-      co: 1.1,
-      pm10: 100,
-      no2: 40,
-      so2: 18,
-      o3: 28,
-    },
-    {
-      date: "03-08-2025",
-      aqi: 100,
-      pm25: 45,
-      co: 0.7,
-      pm10: 85,
-      no2: 30,
-      so2: 10,
-      o3: 22,
-    },
-    {
-      date: "04-08-2025",
-      aqi: 200,
-      pm25: 95,
-      co: 1.3,
-      pm10: 120,
-      no2: 50,
-      so2: 25,
-      o3: 33,
-    },
-    {
-      date: "05-08-2025",
-      aqi: 80,
-      pm25: 40,
-      co: 0.6,
-      pm10: 75,
-      no2: 28,
-      so2: 8,
-      o3: 18,
-    },
-    {
-      date: "06-08-2025",
-      aqi: 150,
-      pm25: 70,
-      co: 1.0,
-      pm10: 95,
-      no2: 38,
-      so2: 15,
-      o3: 27,
-    },
-    {
-      date: "07-08-2025",
-      aqi: 130,
-      pm25: 65,
-      co: 0.8,
-      pm10: 92,
-      no2: 34,
-      so2: 11,
-      o3: 24,
-    },
-  ];
+  const [weeklyData, setWeeklyData] = useState([]);
+  const [categoryDistribution, setCategoryDistribution] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  const fetchWeeklyAQIData = async (loc) => {
+    try {
+      const response = await axios.get(
+        `http://ec2-3-92-135-32.compute-1.amazonaws.com:8000/HistoryAQIData?lat=${loc.lat}&lon=${loc.lon}`
+      );
+      const data = response.data;
+
+      const transformed = Object.entries(data).map(([date, values]) => {
+        const pollutants = values.pollutants || {};
+        return {
+          date: date.split("-").reverse().join("-"),
+          aqi: values.AQI || 0,
+          pm25: pollutants["PM2.5"] || 0,
+          co: (pollutants["CO"] || 0) / 100 / 10,
+          pm10: pollutants["PM10"] || 0,
+          no2: pollutants["NO2"] || 0,
+          so2: pollutants["SO2"] || 0,
+          o3: pollutants["O3"] || 0,
+        };
+      });
+
+      setWeeklyData(transformed);
+      const categoryWise = calculateCategoryDistribution(transformed);
+      setCategoryDistribution(categoryWise);
+      console.log(categoryWise);
+      setLoading(false);
+    } catch (error) {
+      console.error("Failed to fetch weekly AQI data", error);
+    }
+  };
 
   const datesWeekly = weeklyData.map((item) =>
     formatDateToShortMonth(item.date)
@@ -166,18 +242,19 @@ const AQITrendsScreen = () => {
     if (loc) {
       setLocation(JSON.parse(loc));
     }
+    await fetchWeeklyAQIData(JSON.parse(loc));
   };
 
   useEffect(() => {
     fetchLocation();
   }, [showMap]);
 
-  if(!location) {
-    return <Loader />
+  if (loading) {
+    return <Loader />;
   }
 
   return (
-    <ScrollView style={{ padding: 16 }} className="bg-white">
+    <ScrollView style={{ padding: 12 }} className="bg-white">
       {/* Header */}
       <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 10 }}>
         AQI Trends
@@ -228,7 +305,9 @@ const AQITrendsScreen = () => {
         <Card
           style={{ padding: 12, flex: 1, margin: 4, backgroundColor: "white" }}
         >
-          <Text style={{ fontSize: 14 }}>Average AQI</Text>
+          <Text style={{ fontSize: 14 }}>
+            Average {selectedMetric.toUpperCase()}
+          </Text>
           <Text style={{ fontSize: 18, fontWeight: "bold" }}>
             {getAverageOfSelectedMetrics()}
           </Text>
@@ -236,7 +315,9 @@ const AQITrendsScreen = () => {
         <Card
           style={{ padding: 12, flex: 1, margin: 4, backgroundColor: "white" }}
         >
-          <Text style={{ fontSize: 14 }}>Peak AQI</Text>
+          <Text style={{ fontSize: 14 }}>
+            Peak {selectedMetric.toUpperCase()}
+          </Text>
           <Text style={{ fontSize: 18, fontWeight: "bold" }}>
             {getPeakOfSelectedMetrics()}
           </Text>
@@ -244,7 +325,9 @@ const AQITrendsScreen = () => {
         <Card
           style={{ padding: 12, flex: 1, margin: 4, backgroundColor: "white" }}
         >
-          <Text style={{ fontSize: 14 }}>Lowest AQI</Text>
+          <Text style={{ fontSize: 14 }}>
+            Lowest {selectedMetric.toUpperCase()}
+          </Text>
           <Text style={{ fontSize: 18, fontWeight: "bold" }}>
             {getLowestOfSelectedMetrics()}
           </Text>
@@ -262,8 +345,8 @@ const AQITrendsScreen = () => {
             datasets: [{ data: valuesWeekly }],
           }}
           width={screenWidth - 50}
-          height={220}
-          yAxisSuffix={selectedMetric === "co" ? " ppm" : ""}
+          height={300}
+          yAxisSuffix={selectedMetric === "co" ? "mg" : "μg/m³"}
           chartConfig={{
             backgroundColor: "#ffffff",
             backgroundGradientFrom: "#f1f5f9",
@@ -276,6 +359,40 @@ const AQITrendsScreen = () => {
           style={{ borderRadius: 16 }}
         />
       </View>
+      
+      <PollutantBar pollutant={selectedMetric} value={80} />
+      {/* <PollutantBar pollutant="pm25" value={36.5} /> */}
+
+      {/* Category Distribution */}
+      {categoryDistribution[selectedMetric] && (
+        <View className="p-4 shadow-2xl bg-white rounded-xl mb-10">
+          <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 10 }}>
+            Category Distribution of {selectedMetric.toUpperCase()}
+          </Text>
+          <BarChart
+            data={{
+              labels: Object.keys(categoryDistribution[selectedMetric]),
+              datasets: [
+                {
+                  data: Object.values(categoryDistribution[selectedMetric]),
+                },
+              ],
+            }}
+            width={screenWidth - 64}
+            height={250}
+            chartConfig={{
+              backgroundColor: "#fff",
+              backgroundGradientFrom: "#fff",
+              backgroundGradientTo: "#fff",
+              decimalPlaces: 0,
+              color: () => "#3b82f6",
+              labelColor: () => "#000",
+              style: { borderRadius: 16 },
+            }}
+            style={{ borderRadius: 16 }}
+          />
+        </View>
+      )}
 
       {/* Calendar View */}
       <View className="shadow-2xl rounded-xl p-4 bg-white mb-10">
@@ -345,31 +462,6 @@ const AQITrendsScreen = () => {
             );
           }}
           style={{ marginBottom: 24 }}
-        />
-      </View>
-
-      {/* Category Distribution */}
-      <View className="p-4 shadow-2xl bg-white rounded-xl mb-10">
-        <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 10 }}>
-          Category Distribution
-        </Text>
-        <BarChart
-          data={{
-            labels: Object.keys(categoryDistribution),
-            datasets: [{ data: Object.values(categoryDistribution) }],
-          }}
-          width={screenWidth - 64}
-          height={250}
-          chartConfig={{
-            backgroundColor: "#fff",
-            backgroundGradientFrom: "#fff",
-            backgroundGradientTo: "#fff",
-            decimalPlaces: 0,
-            color: () => "#3b82f6",
-            labelColor: () => "#000",
-            style: { borderRadius: 16 },
-          }}
-          style={{ borderRadius: 16 }}
         />
       </View>
     </ScrollView>

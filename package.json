@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
+    "@radix-ui/react-progress": "^1.1.7",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-community/slider": "4.5.6",
     "@react-native-picker/picker": "2.11.1",
@@ -19,6 +20,8 @@
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.6",
     "axios": "^1.11.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "expo": "~53.0.20",
     "expo-blur": "~14.1.5",
     "expo-constants": "~17.1.7",
@@ -35,6 +38,7 @@
     "expo-web-browser": "~14.2.0",
     "i18next": "^25.3.2",
     "i18next-browser-languagedetector": "^8.2.0",
+    "lucide-react": "^0.537.0",
     "lucide-react-native": "^0.534.0",
     "nativewind": "^4.1.23",
     "react": "19.0.0",
@@ -57,7 +61,9 @@
     "react-native-svg": "15.11.2",
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
+    "tailwind-merge": "^3.3.1",
     "tailwindcss": "^3.4.17",
+    "tailwindcss-animate": "^1.0.7",
     "victory-native": "^41.17.4"
   },
   "devDependencies": {
