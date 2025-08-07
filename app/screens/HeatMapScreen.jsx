@@ -1,7 +1,11 @@
-import React, { useState } from "react";
-import { Dimensions, StyleSheet, View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useState } from "react";
+import { StyleSheet, View } from "react-native";
 import MapView, { Heatmap, PROVIDER_GOOGLE } from "react-native-maps";
 import { ActivityIndicator } from "react-native-paper";
+import Loader from "../components/Loader";
+import LocationPickerButton from "../components/LocationPickerButton";
+import LocationPickerMap from "../components/LocationPickerMap";
 
 const HeatMapScreen = () => {
   const [aqiPoints, setAqiPoints] = useState([
@@ -17,9 +21,37 @@ const HeatMapScreen = () => {
     { latitude: 23.205, longitude: 72.638, weight: 0.4 },
   ]);
   const [loading, setLoading] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+  const [location, setLocation] = useState(null);
+  const fetchLocation = async () => {
+    const loc = await AsyncStorage.getItem("smartaqi-location");
+    if (loc) {
+      setLocation(JSON.parse(loc));
+    }
+  };
+
+  useEffect(() => {
+    fetchLocation();
+  }, [showMap]);
+
+  if (!location) {
+    return <Loader />;
+  }
 
   return (
     <View style={styles.container}>
+      <View className="flex-1 bg-white justify-center">
+        <LocationPickerButton
+          onPress={() => setShowMap(true)}
+          location={location.name}
+        />
+        <LocationPickerMap
+          visible={showMap}
+          onClose={() => {
+            setShowMap(false);
+          }}
+        />
+      </View>
       {loading ? (
         <ActivityIndicator size="large" color="blue" />
       ) : (
@@ -54,8 +86,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   map: {
-    width: Dimensions.get("window").width,
-    height: Dimensions.get("window").height,
+    width: "100%",
+    height: "90%",
   },
 });
 

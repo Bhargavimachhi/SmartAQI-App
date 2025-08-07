@@ -11,6 +11,7 @@ import ForecastScreen from "./screens/ForecastScreen";
 import HealthAdvisoryScreen from "./screens/HealthAdvisoryScreen";
 import HomeScreen from "./screens/HomeScreen";
 import SettingsScreen from "./screens/SettingsScreen";
+import LocationLoader from "./components/LocationLoader"
 
 const Tab = createBottomTabNavigator();
 
@@ -20,6 +21,7 @@ export default function Index() {
   return (
     <>
       <StatusBar barStyle="dark-content" />
+      <LocationLoader />
       <Tab.Navigator
         initialRouteName="Settings"
         screenOptions={({ route }) => ({
