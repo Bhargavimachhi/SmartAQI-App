@@ -10,6 +10,7 @@ import ForecastScreen from "./screens/ForecastScreen";
 import HeatMapScreen from "./screens/HeatMapScreen";
 import HomeScreen from "./screens/HomeScreen";
 import SettingsScreen from "./screens/SettingsScreen";
+import HealthAdvisoryScreen from "./screens/HealthAdvisoryScreen"
 
 const Tab = createBottomTabNavigator();
 
@@ -20,7 +21,7 @@ export default function Index() {
     <>
       <StatusBar barStyle="dark-content" />
       <Tab.Navigator
-        initialRouteName="AQIMap"
+        initialRouteName="Settings"
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarIcon: ({ focused, color, size }) => {

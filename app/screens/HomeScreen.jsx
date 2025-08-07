@@ -86,10 +86,7 @@ export default function HomeScreen() {
 
   const handleConfirmLocation = async (e) => {
     setModalVisible(false);
-    await fetchAQIFromLocation(
-      location.latitude,
-      location.longitude
-    );
+    await fetchAQIFromLocation(location.latitude, location.longitude);
   };
 
   const getAddressFromCoords = async (latitude, longitude) => {
@@ -259,18 +256,20 @@ export default function HomeScreen() {
           Pollutant Levels
         </Text>
         {[
-          { name: "PM2.5", value: aqiData.pm25, max: 100, unit:"μg/m³" },
-          { name: "PM10", value: aqiData.pm10, max: 150, unit:"μg/m³" },
-          { name: "NH3", value: aqiData.nh3, max: 150, unit:"μg/m³" },
-          { name: "Ozone", value: aqiData.ozone, max: 100, unit:"μg/m³" },
-          { name: "NO₂", value: aqiData.no2, max: 80, unit:"μg/m³" },
-          { name: "SO₂", value: aqiData.so2, max: 50, unit:"μg/m³" },
-          { name: "CO", value: aqiData.co, max: 1, unit:"mg" },
+          { name: "PM2.5", value: aqiData.pm25, max: 100, unit: "μg/m³" },
+          { name: "PM10", value: aqiData.pm10, max: 150, unit: "μg/m³" },
+          { name: "NH3", value: aqiData.nh3, max: 150, unit: "μg/m³" },
+          { name: "Ozone", value: aqiData.ozone, max: 100, unit: "μg/m³" },
+          { name: "NO₂", value: aqiData.no2, max: 80, unit: "μg/m³" },
+          { name: "SO₂", value: aqiData.so2, max: 50, unit: "μg/m³" },
+          { name: "CO", value: aqiData.co, max: 1, unit: "mg" },
         ].map((item) => (
           <View key={item.name} className="my-2">
             <View className="flex-row justify-between mb-1">
               <Text className="text-sm text-gray-700">{item.name}</Text>
-              <Text className="text-sm text-gray-700">{item.value}{" "}{item.unit}</Text>
+              <Text className="text-sm text-gray-700">
+                {item.value} {item.unit}
+              </Text>
             </View>
             <ProgressBar
               progress={item.value / item.max}
