@@ -14,12 +14,27 @@ const sampleAQIData = [
   { date: "5 Jul", aqi: 80 },
 ];
 
+const aqiData = {
+  "2025-07-02": 42,
+  "2025-07-04": 186,
+  "2025-07-10": 290,
+};
+
 const categoryDistribution = {
   Good: 20,
   Moderate: 40,
   Unhealthy: 25,
   VeryUnhealthy: 10,
   Hazardous: 5,
+};
+
+const getAQIColorHex = (aqi) => {
+  if (aqi <= 50) return "#4ade80";   // Good
+  if (aqi <= 100) return "#15803d";  // Satisfactory
+  if (aqi <= 200) return "#facc15";  // Moderate
+  if (aqi <= 300) return "#f97316";  // Poor
+  if (aqi <= 400) return "#ef4444";  // Very Poor
+  return "#b91c1c";                  // Severe
 };
 
 const AQITrendsScreen = () => {
@@ -92,12 +107,69 @@ const AQITrendsScreen = () => {
       {/* Calendar View */}
       <View className="shadow-2xl rounded-xl p-4 bg-white mb-10">
         <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 10 }}>
-          Calendar Heatmap
+          AQI Calendar
         </Text>
         <Calendar
-          markedDates={{
-            "2025-07-02": { selected: true, selectedColor: "#f59e0b" },
-            "2025-07-04": { selected: true, selectedColor: "#ef4444" },
+          markingType="custom"
+          markedDates={Object.fromEntries(
+            Object.entries(aqiData).map(([date, aqi]) => [
+              date,
+              {
+                customStyles: {
+                  container: {
+                    backgroundColor: getAQIColorHex(aqi),
+                    borderRadius: 100, // circular
+                    width: 32,
+                    height: 32,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    alignSelf: "center",
+                  },
+                  text: {
+                    color: "white",
+                    fontWeight: "bold",
+                  },
+                },
+              },
+            ])
+          )}
+          dayComponent={({ date, state }) => {
+            const aqi = aqiData[date.dateString];
+
+            return (
+              <View style={{ alignItems: "center" }}>
+                <View
+                  style={{
+                    backgroundColor: aqi ? getAQIColorHex(aqi) : "transparent",
+                    width: 32,
+                    height: 32,
+                    borderRadius: 5,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: aqi
+                        ? "white"
+                        : state === "disabled"
+                        ? "gray"
+                        : "black",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {date.day}
+                  </Text>
+                </View>
+                {aqi && (
+                  <Text
+                    style={{ fontSize: 10, color: "#4b5563", marginTop: 2 }}
+                  >
+                    {aqi}
+                  </Text>
+                )}
+              </View>
+            );
           }}
           style={{ marginBottom: 24 }}
         />
