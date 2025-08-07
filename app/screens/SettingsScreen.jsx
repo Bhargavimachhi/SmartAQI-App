@@ -23,7 +23,6 @@ export default function SettingsScreen() {
   const [locationAccess, setLocationAccess] = useState(true);
   const [healthAlerts, setHealthAlerts] = useState(true);
   const [selectedLocation, setSelectedLocation] = useState("auto");
-  const [aqiThreshold, setAqiThreshold] = useState(100);
   const [language, setLanguage] = useState(i18n.language || "en");
   const [customLocation, setCustomLocation] = useState("");
 
@@ -101,21 +100,6 @@ export default function SettingsScreen() {
             </Text>
           </View>
           <Switch value={healthAlerts} onValueChange={setHealthAlerts} />
-        </View>
-
-        <View>
-          <Text className="font-medium text-slate-600 mb-1">
-            {t("settingspage.aqi_threshold")}: {aqiThreshold}
-          </Text>
-          <Slider
-            minimumValue={1}
-            maximumValue={500}
-            step={10}
-            value={aqiThreshold}
-            onValueChange={setAqiThreshold}
-            minimumTrackTintColor="#2563eb"
-            maximumTrackTintColor="#cbd5e1"
-          />
         </View>
       </View>
 

@@ -152,9 +152,9 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 120, // adjust this if needed
     right: 20,
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 60,
+    height: 60,
+    borderRadius:30,
     justifyContent: "center",
     alignItems: "center",
     elevation: 5,
