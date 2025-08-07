@@ -1,9 +1,9 @@
 import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import MapViewCluster from "react-native-map-clustering";
-import { Marker } from "react-native-maps";
+import { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 
 // Color function based on value
 const getColor = (value) => {
@@ -24,6 +24,7 @@ const HeatMapScreen = () => {
     latitudeDelta: 20,
     longitudeDelta: 20,
   });
+  const [isSatelliteView, setIsSatelliteView] = useState(false);
 
   async function getAllStationAqiData() {
     try {
@@ -50,6 +51,18 @@ const HeatMapScreen = () => {
   return (
     <View style={styles.container}>
       {/* Dropdown */}
+      <TouchableOpacity
+        style={[
+          styles.floatingButton,
+          { backgroundColor: "white"},
+        ]}
+        onPress={() => setIsSatelliteView(!isSatelliteView)}
+      >
+        <Text style={styles.floatingButtonText}>
+          {isSatelliteView ? "🛰️" : "🗺️"}
+        </Text>
+      </TouchableOpacity>
+
       <View style={styles.dropdownContainer}>
         <Text style={styles.label}>Select Metric:</Text>
         <Picker
@@ -65,6 +78,8 @@ const HeatMapScreen = () => {
 
       {/* Map */}
       <MapViewCluster
+        provider={PROVIDER_GOOGLE}
+        mapType={isSatelliteView ? "satellite" : "standard"}
         style={styles.map}
         initialRegion={{
           latitude: 22.9734,
@@ -132,5 +147,26 @@ const styles = StyleSheet.create({
   map: {
     flex: 1,
     zIndex: -1,
+  },
+  floatingButton: {
+    position: "absolute",
+    top: 120, // adjust this if needed
+    right: 20,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    zIndex: 999,
+  },
+
+  floatingButtonText: {
+    color: "white",
+    fontSize: 22,
   },
 });
