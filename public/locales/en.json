@@ -19,6 +19,7 @@
   "tabs": {
     "home": "Home",
     "forecast": "Forecast",
+    "aqimap": "AQI Map",
     "heatmap": "Heat Map",
     "colored_map": "Colored Map",
     "trends": "Trends",
