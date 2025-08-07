@@ -7,10 +7,10 @@ import "./i18n.js";
 import AQIMapScreen from "./screens/AQIMapScreen";
 import AQITrendsScreen from "./screens/AQITrendsScreen";
 import ForecastScreen from "./screens/ForecastScreen";
-import HeatMapScreen from "./screens/HeatMapScreen";
+// import HeatMapScreen from "./screens/HeatMapScreen";
+import HealthAdvisoryScreen from "./screens/HealthAdvisoryScreen";
 import HomeScreen from "./screens/HomeScreen";
 import SettingsScreen from "./screens/SettingsScreen";
-import HealthAdvisoryScreen from "./screens/HealthAdvisoryScreen"
 
 const Tab = createBottomTabNavigator();
 
@@ -36,8 +36,8 @@ export default function Index() {
               case "AQIMap":
                 iconName = focused ? "locate" : "locate-outline";
                 break;
-              case "HeatMap":
-                iconName = focused ? "compass" : "compass-outline";
+              case "Health Advice":
+                iconName = focused ? "heart" : "heart-outline";
                 break;
               case "Trends":
                 iconName = focused ? "map" : "map-outline";
@@ -69,9 +69,9 @@ export default function Index() {
           options={{ tabBarLabel: t("tabs.aqimap") }}
         />
         <Tab.Screen
-          name="HeatMap"
-          component={HeatMapScreen}
-          options={{ tabBarLabel: t("tabs.heatmap") }}
+          name="Health Advice"
+          component={HealthAdvisoryScreen}
+          options={{ tabBarLabel: t("tabs.health_advisory") }}
         />
         <Tab.Screen
           name="Trends"

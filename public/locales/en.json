@@ -21,6 +21,7 @@
     "forecast": "Forecast",
     "aqimap": "AQI Map",
     "heatmap": "Heat Map",
+    "health_advisory": "Health Advice",
     "colored_map": "Colored Map",
     "trends": "Trends",
     "settings": "Settings"
