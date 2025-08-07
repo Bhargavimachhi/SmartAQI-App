@@ -1,15 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import React from "react";
-import { StatusBar } from "react-native";
 import { useTranslation } from "react-i18next";
+import { StatusBar } from "react-native";
+import "./i18n.js";
+import AQIMapScreen from "./screens/AQIMapScreen";
 import AQITrendsScreen from "./screens/AQITrendsScreen";
 import ForecastScreen from "./screens/ForecastScreen";
 import HeatMapScreen from "./screens/HeatMapScreen";
 import HomeScreen from "./screens/HomeScreen";
 import SettingsScreen from "./screens/SettingsScreen";
-import AQIColoredMap from "./screens/AQIColoredMap";
-import './i18n.js';
 
 const Tab = createBottomTabNavigator();
 
@@ -20,7 +20,7 @@ export default function Index() {
     <>
       <StatusBar barStyle="dark-content" />
       <Tab.Navigator
-        initialRouteName="HeatMap"
+        initialRouteName="AQIMap"
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarIcon: ({ focused, color, size }) => {
@@ -32,10 +32,10 @@ export default function Index() {
               case "Forecast":
                 iconName = focused ? "trending-up" : "trending-up-outline";
                 break;
-              case "HeatMap":
+              case "AQIMap":
                 iconName = focused ? "locate" : "locate-outline";
                 break;
-              case "AQIColoredMap":
+              case "HeatMap":
                 iconName = focused ? "compass" : "compass-outline";
                 break;
               case "Trends":
@@ -63,14 +63,14 @@ export default function Index() {
           options={{ tabBarLabel: t("tabs.forecast") }}
         />
         <Tab.Screen
+          name="AQIMap"
+          component={AQIMapScreen}
+          options={{ tabBarLabel: t("tabs.aqimap") }}
+        />
+        <Tab.Screen
           name="HeatMap"
           component={HeatMapScreen}
           options={{ tabBarLabel: t("tabs.heatmap") }}
-        />
-        <Tab.Screen
-          name="AQIColoredMap"
-          component={AQIColoredMap}
-          options={{ tabBarLabel: t("tabs.colored_map") }}
         />
         <Tab.Screen
           name="Trends"
