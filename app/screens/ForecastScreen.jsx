@@ -1,21 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useIsFocused } from "@react-navigation/native";
 import axios from "axios";
-import * as Location from "expo-location";
 import React, { useEffect, useState } from "react";
-import {
-  Dimensions,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Dimensions, ScrollView, Text, View } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import Loader from "../components/Loader";
-import LocationPickerButton from "../components/LocationPickerButton";
-import LocationPickerMap from "../components/LocationPickerMap";
-import { getAQIColorHex, getHealthTips } from "../helpers/AQIHelpers";
 import LocationData from "../components/LocationData";
-import { useIsFocused } from "@react-navigation/native";
+import { getAQIColorHex } from "../helpers/AQIHelpers";
 
 const screenWidth = Dimensions.get("window").width - 22;
 
@@ -24,15 +15,15 @@ export default function ForecastScreen() {
   const [aqiOverallData, setAqiOverallData] = useState(null);
   const [aqiData, setAqiData] = useState(null);
   const [location, setLocation] = useState(null);
+  const isFocused = useIsFocused();
 
   const fetchAQIFromLocation = async () => {
     try {
-      if (!location?.lat || !location?.lon) {
-        console.warn("Location data is missing:", location);
-        return;
-      }
-
       setLoading(true);
+      // if (!location?.lat || !location?.lon) {
+      //   console.warn("Location data is missing:", location);
+      //   setLoading(false);
+      // }
 
       const res = await axios.post(
         `http://ec2-3-92-135-32.compute-1.amazonaws.com:8000/rural_aqi`,
@@ -72,7 +63,6 @@ export default function ForecastScreen() {
         },
       };
       setAqiData(data);
-      setLoading(false);
     } catch (err) {
       console.log(err);
       console.log(JSON.stringify(err));
@@ -81,11 +71,12 @@ export default function ForecastScreen() {
 
   const fetchLocation = async () => {
     try {
+      setLoading(true);
       const data = await AsyncStorage.getItem("smartaqi-location");
       if (data) {
         setLocation(JSON.parse(data));
       }
-      console.log("Location ", JSON.parse(data));
+      // console.log("Location ", JSON.parse(data));
       await fetchAQIFromLocation(JSON.parse(data));
       await fetchAQIData(JSON.parse(data));
       setLoading(false);
@@ -118,7 +109,7 @@ export default function ForecastScreen() {
       );
 
       const data = await response.json();
-      // console.log("Fetched AQI Pollutants Data:", data);
+      console.log("Fetched AQI Pollutants Data:", data);
       return data;
     } catch (error) {
       console.error("Error fetching AQI pollutants:", error);
@@ -126,10 +117,9 @@ export default function ForecastScreen() {
       setLoading(false);
     }
   };
-  const isFocused = useIsFocused();
 
   const convertApiResponseToInputJson = async (data) => {
-    const length = data.PM25_pred.length;
+    const length = data?.PM25_pred?.length;
     const result = [];
 
     for (let i = 0; i < length; i++) {
@@ -230,23 +220,22 @@ export default function ForecastScreen() {
       dominant_pollutant: dominantPollutant,
     };
   };
+
   async function fetchAQIData(location) {
-      try {
-        const pollutants = await fetchaqiPollutants(
-          location.lat, location.lon
-        );
-        const input_json = await convertApiResponseToInputJson(pollutants);
+    try {
+      const pollutants = await fetchaqiPollutants(location?.lat, location?.lon);
+      const input_json = await convertApiResponseToInputJson(pollutants);
 
-        const aqiData = input_json.map((data) => calculateAQI(data));
+      const aqiData = input_json.map((data) => calculateAQI(data));
 
-        const overallAqis = aqiData.map((item) => item.overall_aqi);
-        setAqiOverallData(overallAqis);
+      const overallAqis = aqiData.map((item) => item.overall_aqi);
+      setAqiOverallData(overallAqis);
 
-        setLoading(false);
-      } catch (err) {
-        alert(err);
-      }
+      setLoading(false);
+    } catch (err) {
+      alert(err);
     }
+  }
 
   useEffect(() => {
     fetchLocation();
@@ -282,7 +271,7 @@ export default function ForecastScreen() {
     <ScrollView className="flex-1 px-4 pt-6 bg-white">
       <Text className="mb-5 text-2xl font-bold">Weekly AQI Overview</Text>
       <View className="justify-center flex-1 bg-white">
-        <LocationData location={location.name}/>
+        <LocationData location={location.name} />
       </View>
 
       <View className="px-4 mt-10">
