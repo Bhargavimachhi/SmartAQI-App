@@ -170,6 +170,9 @@ export default function HomeScreen() {
         </Text>
       </View>
       <View className="mb-8">
+        <Text className="mb-5 text-xl font-bold text-gray-800">
+          Pollution Bar Of AQI
+        </Text>
         <PollutantBar pollutant="aqi" value={20} />
       </View>
 

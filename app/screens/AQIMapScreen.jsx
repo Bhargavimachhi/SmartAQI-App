@@ -43,7 +43,6 @@ const AQIMapScreen = () => {
           "http://ec2-3-92-135-32.compute-1.amazonaws.com:8000/getallstations"
         );
         const data = res.data;
-        console.log(data);
         const filteredAqiData = data.filter((point) => {
           return (
             Math.abs(point.lat - region.latitude) < region.latitudeDelta / 2 &&
@@ -148,7 +147,7 @@ const AQIMapScreen = () => {
         </StyledView>
       )}
 
-      {mapType === "heatmap" && <HeatMapScreen aqiPoints={[]} />}
+      {mapType === "heatmap" && <HeatMapScreen aqiPoints={aqiData} />}
 
       {/* Map View */}
       {mapType !== "heatmap" && (

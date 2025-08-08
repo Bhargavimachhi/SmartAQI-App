@@ -23,7 +23,7 @@ export default function Index() {
       <StatusBar barStyle="dark-content" />
       <LocationLoader />
       <Tab.Navigator
-        initialRouteName="Settings"
+        initialRouteName="Home"
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarIcon: ({ focused, color, size }) => {

@@ -92,15 +92,6 @@ export default function HealthAdvisoryScreen() {
       )}
 
       <View className="p-4 my-4 bg-red-100 border border-red-300 rounded-lg">
-        <Text className="text-lg font-bold text-red-700">
-          ⚠️ Air Quality Alert
-        </Text>
-        <Text className="mt-2 text-gray-800">
-          The current AQI is above{" "}
-          <Text className="font-semibold">{"100"}</Text>, which exceeds the safe
-          threshold. Air quality is considered{" "}
-          <Text className="font-semibold">poor</Text>.
-        </Text>
         <Text className="mt-1 text-gray-800">
           Here are the list of nearest hospitals for your assistance:
         </Text>
