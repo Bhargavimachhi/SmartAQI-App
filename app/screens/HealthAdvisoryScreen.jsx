@@ -7,6 +7,8 @@ import MapView, { Marker } from "react-native-maps";
 import Loader from "../components/Loader";
 import LocationPickerButton from "../components/LocationPickerButton";
 import LocationPickerMap from "../components/LocationPickerMap";
+import LocationData from "../components/LocationData";
+import { useIsFocused } from "@react-navigation/native";
 
 export default function HealthAdvisoryScreen() {
   const [hospitals, setHospitals] = useState([]);
@@ -14,20 +16,14 @@ export default function HealthAdvisoryScreen() {
   const [currentLocation, setCurrentLocation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showMap, setShowMap] = useState(false);
+  const isFocused = useIsFocused();
 
-  const getNearestHospitals = async () => {
+  const getNearestHospitals = async (loc) => {
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        console.log("Permission to access location was denied");
-        setLoading(false);
-        return;
-      }
-
-      const loc = await Location.getCurrentPositionAsync({});
-      const lat = loc.coords.latitude;
-      const lon = loc.coords.longitude;
+      const lat = loc.lat;
+      const lon = loc.lon;
       setLocation({ lat, lon });
+      console.log("Hopital", lon, lat);
 
       const res = await axios.get(
         `http://ec2-3-92-135-32.compute-1.amazonaws.com:8000/getnearesthospitals?lat=${lat}&lon=${lon}`
@@ -43,7 +39,7 @@ export default function HealthAdvisoryScreen() {
 
   useEffect(() => {
     fetchLocation();
-  }, [showMap]);
+  }, [isFocused]);
 
   const fetchLocation = async () => {
     try {
@@ -51,14 +47,11 @@ export default function HealthAdvisoryScreen() {
       if (data) {
         setCurrentLocation(JSON.parse(data));
       }
+      getNearestHospitals(JSON.parse(data));
     } catch (error) {
       console.error("Error fetching location from AsyncStorage:", error);
     }
   };
-
-  useEffect(() => {
-    getNearestHospitals();
-  }, []);
 
   if (loading) return <Loader />;
 
@@ -74,18 +67,9 @@ export default function HealthAdvisoryScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.heading}>Nearby Hospitals</Text>
+      <Text style={styles.heading}>Nearby Hospitals {location.name}</Text>
       <View className="justify-center flex-1 bg-white">
-        <LocationPickerButton
-          onPress={() => setShowMap(true)}
-          location={currentLocation?.name}
-        />
-        <LocationPickerMap
-          visible={showMap}
-          onClose={() => {
-            setShowMap(false);
-          }}
-        />
+        <LocationData location={currentLocation.name} />
       </View>
 
       {hospitals.length > 0 && (

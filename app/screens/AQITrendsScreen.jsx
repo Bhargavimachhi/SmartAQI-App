@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Picker } from "@react-native-picker/picker";
+import { useIsFocused } from "@react-navigation/native";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Dimensions, ScrollView, Text, View } from "react-native";
@@ -7,8 +8,7 @@ import { Calendar } from "react-native-calendars";
 import { BarChart, LineChart } from "react-native-chart-kit";
 import { Card } from "react-native-paper";
 import Loader from "../components/Loader";
-import LocationPickerButton from "../components/LocationPickerButton";
-import LocationPickerMap from "../components/LocationPickerMap";
+import LocationData from "../components/LocationData";
 import { PollutantBar } from "../components/PollutantBar";
 
 const screenWidth = Dimensions.get("window").width;
@@ -166,7 +166,7 @@ const formatDateToShortMonth = (dateStr) => {
     "Dec",
   ];
   const shortMonth = monthNames[month - 1];
-  return `${day.toString().padStart(2, "0")} ${shortMonth}`;
+  return ` ${day.toString().padStart(2, "")}${shortMonth} `;
 };
 
 const AQITrendsScreen = () => {
@@ -175,14 +175,16 @@ const AQITrendsScreen = () => {
   const [weeklyData, setWeeklyData] = useState([]);
   const [categoryDistribution, setCategoryDistribution] = useState({});
   const [loading, setLoading] = useState(true);
+  const isFocused = useIsFocused();
 
   const fetchWeeklyAQIData = async (loc) => {
     try {
+      console.log("started");
       const response = await axios.get(
         `http://ec2-3-92-135-32.compute-1.amazonaws.com:8000/HistoryAQIData?lat=${loc.lat}&lon=${loc.lon}`
       );
       const data = response.data;
-
+      console.log(data);
       const transformed = Object.entries(data).map(([date, values]) => {
         const pollutants = values.pollutants || {};
         return {
@@ -200,7 +202,6 @@ const AQITrendsScreen = () => {
       setWeeklyData(transformed);
       const categoryWise = calculateCategoryDistribution(transformed);
       setCategoryDistribution(categoryWise);
-      console.log(categoryWise);
       setLoading(false);
     } catch (error) {
       console.error("Failed to fetch weekly AQI data", error);
@@ -242,12 +243,13 @@ const AQITrendsScreen = () => {
     if (loc) {
       setLocation(JSON.parse(loc));
     }
+    console.log(loc);
     await fetchWeeklyAQIData(JSON.parse(loc));
   };
 
   useEffect(() => {
     fetchLocation();
-  }, [showMap]);
+  }, [isFocused]);
 
   if (loading) {
     return <Loader />;
@@ -260,16 +262,7 @@ const AQITrendsScreen = () => {
         AQI Trends
       </Text>
       <View className="justify-center flex-1 bg-white">
-        <LocationPickerButton
-          onPress={() => setShowMap(true)}
-          location={location.name}
-        />
-        <LocationPickerMap
-          visible={showMap}
-          onClose={() => {
-            setShowMap(false);
-          }}
-        />
+        <LocationData location={location.name} />
       </View>
 
       <View style={{ marginBottom: 16 }}>
@@ -303,7 +296,14 @@ const AQITrendsScreen = () => {
         }}
       >
         <Card
-          style={{ padding: 12, flex: 1, margin: 4, backgroundColor: "white" }}
+          style={{
+            padding: 12,
+            flex: 1,
+            margin: 4,
+            backgroundColor: "white",
+            borderWidth: 2,
+            borderColor: getAQIColorHex(getAverageOfSelectedMetrics()),
+          }}
         >
           <Text style={{ fontSize: 14 }}>
             Average {selectedMetric.toUpperCase()}
@@ -313,7 +313,14 @@ const AQITrendsScreen = () => {
           </Text>
         </Card>
         <Card
-          style={{ padding: 12, flex: 1, margin: 4, backgroundColor: "white" }}
+          style={{
+            padding: 12,
+            flex: 1,
+            margin: 4,
+            backgroundColor: "white",
+            borderWidth: 2,
+            borderColor: getAQIColorHex(getPeakOfSelectedMetrics()),
+          }}
         >
           <Text style={{ fontSize: 14 }}>
             Peak {selectedMetric.toUpperCase()}
@@ -323,7 +330,14 @@ const AQITrendsScreen = () => {
           </Text>
         </Card>
         <Card
-          style={{ padding: 12, flex: 1, margin: 4, backgroundColor: "white" }}
+          style={{
+            padding: 12,
+            flex: 1,
+            margin: 4,
+            backgroundColor: "white",
+            borderWidth: 2,
+            borderColor: getAQIColorHex(getLowestOfSelectedMetrics()),
+          }}
         >
           <Text style={{ fontSize: 14 }}>
             Lowest {selectedMetric.toUpperCase()}
@@ -346,6 +360,7 @@ const AQITrendsScreen = () => {
           }}
           width={screenWidth - 50}
           height={300}
+          xLabelsOffset={2}
           yAxisSuffix={selectedMetric === "co" ? "mg" : "μg/m³"}
           chartConfig={{
             backgroundColor: "#ffffff",
@@ -359,13 +374,20 @@ const AQITrendsScreen = () => {
           style={{ borderRadius: 16 }}
         />
       </View>
-      
+
+          <View className="p-4 mb-10 bg-white shadow-2xl rounded-xl">
+<Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 10 }}>
+        Pollution Bar of {selectedMetric.toUpperCase()}
+      </Text>
       <PollutantBar pollutant={selectedMetric} value={80} />
+
+          </View>
+      
       {/* <PollutantBar pollutant="pm25" value={36.5} /> */}
 
       {/* Category Distribution */}
       {categoryDistribution[selectedMetric] && (
-        <View className="p-4 mb-10 bg-white shadow-2xl rounded-xl">
+        <View className="p-4 mb-10 mt-5 bg-white shadow-2xl rounded-xl">
           <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 10 }}>
             Category Distribution of {selectedMetric.toUpperCase()}
           </Text>

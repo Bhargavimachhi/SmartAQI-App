@@ -14,6 +14,8 @@ import Loader from "../components/Loader";
 import LocationPickerButton from "../components/LocationPickerButton";
 import LocationPickerMap from "../components/LocationPickerMap";
 import { getAQIColorHex, getHealthTips } from "../helpers/AQIHelpers";
+import LocationData from "../components/LocationData";
+import { useIsFocused } from "@react-navigation/native";
 
 const screenWidth = Dimensions.get("window").width - 22;
 
@@ -26,7 +28,7 @@ export default function ForecastScreen() {
   const [aqiData, setAqiData] = useState(null);
   const [healthTips, setHealthTips] = useState(null);
   const [aqiColor, setAqiColor] = useState(null);
-  const [location, setLocation] = useState();
+  const [location, setLocation] = useState(null);
   const [showMap, setShowMap] = useState(false);
 
   const fetchWeeklydata = async (lat, lon) => {
@@ -121,6 +123,8 @@ export default function ForecastScreen() {
         setLocation(JSON.parse(data));
       }
       // console.log("Location ", JSON.parse(data));
+      // await fetchAQIFromLocation();
+      // await fetchAQIData();
     } catch (error) {
       console.error("Error fetching location from AsyncStorage:", error);
     }
@@ -158,6 +162,7 @@ export default function ForecastScreen() {
       setLoading(false);
     }
   };
+  const isFocused = useIsFocused();
 
   const convertApiResponseToInputJson = async (data) => {
     const length = data.PM25_pred.length;
@@ -261,27 +266,13 @@ export default function ForecastScreen() {
       dominant_pollutant: dominantPollutant,
     };
   };
-
-  useEffect(() => {
-    fetchLocation();
-  }, [showMap]);
-
-  useEffect(() => {
-    async function fetchAQIData() {
+  async function fetchAQIData() {
       try {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          alert("Permission to access location was denied");
-          return;
-        }
-
-        let loc = await Location.getCurrentPositionAsync({});
-        await fetchWeeklydata(loc.coords.latitude, loc.coords.longitude);
-        await fetchMonthlydata(loc.coords.latitude, loc.coords.longitude);
+        await fetchWeeklydata(location.lat, location.lon);
+        await fetchMonthlydata(location.lat, location.lon);
 
         const pollutants = await fetchaqiPollutants(
-          loc.coords.latitude,
-          loc.coords.longitude
+          location.lat, location.lon
         );
         const input_json = await convertApiResponseToInputJson(pollutants);
 
@@ -295,13 +286,10 @@ export default function ForecastScreen() {
         alert(err);
       }
     }
-    fetchAQIData();
-  }, []);
 
   useEffect(() => {
     fetchLocation();
-    fetchAQIFromLocation();
-  }, []);
+  }, [isFocused]);
 
   const aiPrediction = aqiOverallData?.map((aqi, index) => {
     const date = new Date();
@@ -372,18 +360,9 @@ export default function ForecastScreen() {
 
   return (
     <ScrollView className="flex-1 px-4 pt-6 bg-white">
-      <Text className="mb-10 text-2xl font-bold">Weekly AQI Overview</Text>
+      <Text className="mb-5 text-2xl font-bold">Weekly AQI Overview</Text>
       <View className="justify-center flex-1 bg-white">
-        <LocationPickerButton
-          onPress={() => setShowMap(true)}
-          location={location.name}
-        />
-        <LocationPickerMap
-          visible={showMap}
-          onClose={() => {
-            setShowMap(false);
-          }}
-        />
+        <LocationData location={location.name}/>
       </View>
 
       <View className="px-4 mt-4">

@@ -5,10 +5,10 @@ import React, { useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { ProgressBar } from "react-native-paper";
 import Loader from "../components/Loader";
-import LocationChanger from "../components/LocationPickerButton";
-import { getLocationFromStorage } from "../hooks/uselocalStorage";
-import LocationPickerButton from "../components/LocationPickerButton";
-import LocationPickerMap from "../components/LocationPickerMap";
+import Location from "../components/LocationData";
+import { PollutantBar } from "../components/PollutantBar";
+import { useIsFocused } from "@react-navigation/native";
+import LocationData from "../components/LocationData";
 
 const getAQIColorHex = (aqi) => {
   if (aqi <= 50) return "#4ade80";
@@ -67,19 +67,16 @@ export default function HomeScreen() {
   const [location, setLocation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showMap, setShowMap] = useState(false);
+  const isFocused = useIsFocused();
 
-  useEffect(() => {
-    fetchLocation();
-  }, [showMap]);
-
-  async function fetchAQIFromLocation() {
+  async function fetchAQIFromLocation(loc) {
     try {
       setLoading(true);
       const res = await axios.post(
         `http://ec2-3-92-135-32.compute-1.amazonaws.com:8000/rural_aqi`,
         {
-          lat: location.lat,
-          lon: location.lon,
+          lat: loc.lat,
+          lon: loc.lon,
         }
       );
 
@@ -130,6 +127,7 @@ export default function HomeScreen() {
         setLocation(JSON.parse(data));
       }
       console.log("Location ", JSON.parse(data));
+      fetchAQIFromLocation(JSON.parse(data));
     } catch (error) {
       console.error("Error fetching location from AsyncStorage:", error);
     }
@@ -137,8 +135,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     fetchLocation();
-    fetchAQIFromLocation();
-  }, []);
+  }, [isFocused]);
 
   if (loading) {
     return <Loader text="Loading Data..." />;
@@ -146,7 +143,7 @@ export default function HomeScreen() {
 
   return (
     <ScrollView className="flex-1 p-4 bg-white">
-      <View className="flex-row items-center justify-between mb-10">
+      <View className="flex-row items-center justify-between mb-5">
         <View>
           <Text className="mb-1 text-2xl font-bold text-gray-900">
             Air Quality
@@ -155,16 +152,7 @@ export default function HomeScreen() {
       </View>
 
       <View className="justify-center flex-1 bg-white">
-        <LocationPickerButton
-          onPress={() => setShowMap(true)}
-          location={location.name}
-        />
-        <LocationPickerMap
-          visible={showMap}
-          onClose={() => {
-            setShowMap(false);
-          }}
-        />
+        <LocationData location={location.name} />
       </View>
 
       {/* AQI Box */}
@@ -184,6 +172,9 @@ export default function HomeScreen() {
         <Text className="mt-1 text-xs text-center text-gray-500">
           Last updated: {new Date(aqiData?.timestamp).toLocaleTimeString()}
         </Text>
+      </View>
+      <View className="mb-8">
+        <PollutantBar pollutant="aqi" value={20} />
       </View>
 
       {/* Pollutant Levels */}

@@ -6,6 +6,8 @@ import { ActivityIndicator } from "react-native-paper";
 import Loader from "../components/Loader";
 import LocationPickerButton from "../components/LocationPickerButton";
 import LocationPickerMap from "../components/LocationPickerMap";
+import LocationData from "../components/LocationData";
+import { useIsFocused } from '@react-navigation/native';
 
 const HeatMapScreen = () => {
   const [aqiPoints, setAqiPoints] = useState([
@@ -21,8 +23,10 @@ const HeatMapScreen = () => {
     { latitude: 23.205, longitude: 72.638, weight: 0.4 },
   ]);
   const [loading, setLoading] = useState(false);
+  
   const [showMap, setShowMap] = useState(false);
   const [location, setLocation] = useState(null);
+  const isFocused = useIsFocused();
   const fetchLocation = async () => {
     const loc = await AsyncStorage.getItem("smartaqi-location");
     if (loc) {
@@ -32,7 +36,7 @@ const HeatMapScreen = () => {
 
   useEffect(() => {
     fetchLocation();
-  }, [showMap]);
+  }, [isFocused]);
 
   if (!location) {
     return <Loader />;
@@ -41,16 +45,7 @@ const HeatMapScreen = () => {
   return (
     <View style={styles.container}>
       <View className="flex-1 bg-white justify-center">
-        <LocationPickerButton
-          onPress={() => setShowMap(true)}
-          location={location.name}
-        />
-        <LocationPickerMap
-          visible={showMap}
-          onClose={() => {
-            setShowMap(false);
-          }}
-        />
+        <LocationData location={location.name} />
       </View>
       {loading ? (
         <ActivityIndicator size="large" color="blue" />

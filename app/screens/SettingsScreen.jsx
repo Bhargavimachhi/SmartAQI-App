@@ -1,21 +1,18 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Switch,
-  ScrollView,
-  TextInput,
-} from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import Slider from "@react-native-community/slider";
 import {
-  Settings as SettingsIcon,
   Bell,
   MapPin,
   Palette,
+  Settings as SettingsIcon,
 } from "lucide-react-native";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ScrollView, Switch, Text, TextInput, View } from "react-native";
+import LocationPickerButton from "../components/LocationPickerButton";
+import LocationPickerMap from "../components/LocationPickerMap";
 import "../i18n"; // Make sure i18n is initialized
+import Loader from "../components/Loader";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function SettingsScreen() {
   const { t, i18n } = useTranslation();
@@ -25,6 +22,26 @@ export default function SettingsScreen() {
   const [selectedLocation, setSelectedLocation] = useState("auto");
   const [language, setLanguage] = useState(i18n.language || "en");
   const [customLocation, setCustomLocation] = useState("");
+  const [location, setLocation] = useState(null);
+  const [showMap, setShowMap] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const fetchLocation = async () => {
+    const loc = await AsyncStorage.getItem("smartaqi-location");
+    if (loc) {
+      setLocation(JSON.parse(loc));
+    }
+    console.log(JSON.parse(loc));
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchLocation();
+  }, [showMap]);
+
+  if (loading) {
+    return <Loader />;
+  }
 
   const languages = [
     { id: "en", name: "English" },
@@ -38,22 +55,22 @@ export default function SettingsScreen() {
   };
 
   return (
-    <ScrollView className="bg-gray-50 dark:bg-slate-900 px-4 py-6">
+    <ScrollView className="bg-gray-50 px-4 py-6">
       <View className="flex-row items-center mb-6 space-x-2">
         <SettingsIcon size={24} color="#64748b" />
-        <Text className="text-2xl font-bold text-slate-700 dark:text-white">
+        <Text className="text-2xl font-bold text-slate-700">
           {t("settingspage.title")}
         </Text>
       </View>
 
       {/* Location Settings */}
-      <View className="bg-white dark:bg-slate-800 p-6 rounded-xl mb-6 space-y-4 shadow-sm">
-        <Text className="text-lg font-semibold text-slate-700 dark:text-white mb-5">
+      <View className="bg-white  p-6 rounded-xl mb-6 space-y-4 shadow-sm">
+        <Text className="text-lg font-semibold text-slate-700 mb-5">
           <MapPin size={18} /> {t("settingspage.location_settings")}
         </Text>
         <View className="flex-row justify-between items-center">
           <View>
-            <Text className="font-medium text-slate-600 dark:text-slate-200">
+            <Text className="font-medium text-slate-600 ">
               {t("settingspage.location_access")}
             </Text>
             <Text className="text-sm text-gray-500">
@@ -71,11 +88,23 @@ export default function SettingsScreen() {
             onChangeText={setCustomLocation}
           />
         )}
+        <View className="justify-center flex-1 bg-white">
+          <LocationPickerButton
+            onPress={() => setShowMap(true)}
+            location={location?.name}
+          />
+          <LocationPickerMap
+            visible={showMap}
+            onClose={() => {
+              setShowMap(false);
+            }}
+          />
+        </View>
       </View>
 
       {/* Notifications */}
-      <View className="bg-white dark:bg-slate-800 p-6 rounded-xl mb-6 space-y-4 shadow-sm">
-        <Text className="text-lg font-semibold text-slate-700 dark:text-white mb-5">
+      <View className="bg-white p-6 rounded-xl mb-6 space-y-4 shadow-sm">
+        <Text className="text-lg font-semibold text-slate-700 mb-5">
           <Bell size={18} /> {t("settingspage.notifications_title")}
         </Text>
         <View className="flex-row justify-between items-center">
@@ -104,8 +133,8 @@ export default function SettingsScreen() {
       </View>
 
       {/* Display & Language */}
-      <View className="bg-white dark:bg-slate-800 p-6 rounded-xl mb-6 space-y-4 shadow-sm">
-        <Text className="text-lg font-semibold text-slate-700 dark:text-white mb-5">
+      <View className="bg-white  p-6 rounded-xl mb-6 space-y-4 shadow-sm">
+        <Text className="text-lg font-semibold text-slate-700 mb-5">
           <Palette size={18} /> {t("settingspage.display_language")}
         </Text>
 
