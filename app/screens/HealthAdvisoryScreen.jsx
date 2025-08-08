@@ -1,19 +1,19 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import * as Location from "expo-location";
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import Loader from "../components/Loader";
-import {
-  getAQIFromStorage,
-  getLocationFromStorage,
-} from "../hooks/uselocalStorage";
+import LocationPickerButton from "../components/LocationPickerButton";
+import LocationPickerMap from "../components/LocationPickerMap";
 
 export default function HealthAdvisoryScreen() {
   const [hospitals, setHospitals] = useState([]);
   const [location, setLocation] = useState(null);
+  const [currentLocation, setCurrentLocation] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [aqi, setAqi] = useState(null);
+  const [showMap, setShowMap] = useState(false);
 
   const getNearestHospitals = async () => {
     try {
@@ -42,29 +42,25 @@ export default function HealthAdvisoryScreen() {
   };
 
   useEffect(() => {
+    fetchLocation();
+  }, [showMap]);
+
+  const fetchLocation = async () => {
+    try {
+      const data = await AsyncStorage.getItem("smartaqi-location");
+      if (data) {
+        setCurrentLocation(JSON.parse(data));
+      }
+    } catch (error) {
+      console.error("Error fetching location from AsyncStorage:", error);
+    }
+  };
+
+  useEffect(() => {
     getNearestHospitals();
   }, []);
 
-  // useEffect(() => {
-  //   const fetchLocalStorageData = async () => {
-  //     const aqi = await getAQIFromStorage();
-  //     const locationData = await getLocationFromStorage();
-  //     if (locationData) {
-  //       setLocation(locationData);
-  //     }
-
-  //     console.log("Fetched AQI from local storage:", aqi);
-  //     console.log("Fetched Location from local storage:", locationData);
-  //     setAqi(aqi);
-  //     setLocation(locationData);
-  //   };
-
-  //   fetchLocalStorageData();
-  // }, []);
-
   if (loading) return <Loader />;
-
-  // console.log("The current aqi is :", aqi);
 
   if (!location) {
     return (
@@ -79,6 +75,18 @@ export default function HealthAdvisoryScreen() {
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.heading}>Nearby Hospitals</Text>
+      <View className="justify-center flex-1 bg-white">
+        <LocationPickerButton
+          onPress={() => setShowMap(true)}
+          location={currentLocation?.name}
+        />
+        <LocationPickerMap
+          visible={showMap}
+          onClose={() => {
+            setShowMap(false);
+          }}
+        />
+      </View>
 
       {hospitals.length > 0 && (
         <MapView
@@ -104,12 +112,6 @@ export default function HealthAdvisoryScreen() {
       )}
 
       <View className="p-4 my-4 bg-red-100 border border-red-300 rounded-lg">
-        <Text className="mt-2 text-gray-800">
-          The current AQI is above {location.name}{" "}
-          <Text className="font-semibold">{aqi || "..."}</Text>, which exceeds
-          the safe threshold. Air quality is considered{" "}
-          <Text className="font-semibold">poor</Text>.
-        </Text>
         <Text className="text-lg font-bold text-red-700">
           ⚠️ Air Quality Alert
         </Text>
@@ -160,7 +162,7 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 20,
     fontWeight: "bold",
-    textAlign: "center",
+    textAlign: "start",
     marginBottom: 10,
   },
   subHeading: {
@@ -172,7 +174,7 @@ const styles = StyleSheet.create({
   map: {
     width: "100%",
     height: 300,
-    borderRadius: 8,
+    borderRadius: 12,
   },
   center: {
     flex: 1,
