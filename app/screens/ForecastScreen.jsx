@@ -107,10 +107,14 @@ export default function ForecastScreen() {
           }),
         }
       );
+      setLoading(true);
 
       const data = await response.json();
-      console.log("Fetched AQI Pollutants Data:", data);
-      return data;
+      if (response.ok) {
+        console.log("Fetched AQI Pollutants Data:", data); //uncomment for debugging
+        setLoading(false);
+        return data;
+      }
     } catch (error) {
       console.error("Error fetching AQI pollutants:", error);
     } finally {
