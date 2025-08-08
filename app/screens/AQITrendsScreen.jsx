@@ -259,7 +259,7 @@ const AQITrendsScreen = () => {
       <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 10 }}>
         AQI Trends
       </Text>
-      <View className="flex-1 bg-white justify-center">
+      <View className="justify-center flex-1 bg-white">
         <LocationPickerButton
           onPress={() => setShowMap(true)}
           location={location.name}
@@ -335,7 +335,7 @@ const AQITrendsScreen = () => {
       </View>
 
       {/* AQI Line Chart */}
-      <View className="shadow-2xl bg-white rounded-xl p-4 mb-10">
+      <View className="p-4 mb-10 bg-white shadow-2xl rounded-xl">
         <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 20 }}>
           Weekly {selectedMetric.toUpperCase()} Trends
         </Text>
@@ -365,7 +365,7 @@ const AQITrendsScreen = () => {
 
       {/* Category Distribution */}
       {categoryDistribution[selectedMetric] && (
-        <View className="p-4 shadow-2xl bg-white rounded-xl mb-10">
+        <View className="p-4 mb-10 bg-white shadow-2xl rounded-xl">
           <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 10 }}>
             Category Distribution of {selectedMetric.toUpperCase()}
           </Text>
@@ -395,7 +395,7 @@ const AQITrendsScreen = () => {
       )}
 
       {/* Calendar View */}
-      <View className="shadow-2xl rounded-xl p-4 bg-white mb-10">
+      <View className="p-4 mb-10 bg-white shadow-2xl rounded-xl">
         <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 10 }}>
           AQI Calendar
         </Text>
