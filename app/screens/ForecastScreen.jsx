@@ -20,45 +20,10 @@ import { useIsFocused } from "@react-navigation/native";
 const screenWidth = Dimensions.get("window").width - 22;
 
 export default function ForecastScreen() {
-  const [chartType, setChartType] = useState("weekly");
-  const [loading, setLoading] = useState(false);
-  const [aqiWeeklyData, setAqiWeeklyData] = useState(null);
-  const [aqiMonthlyData, setAqiMonthlyData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [aqiOverallData, setAqiOverallData] = useState(null);
   const [aqiData, setAqiData] = useState(null);
-  const [healthTips, setHealthTips] = useState(null);
-  const [aqiColor, setAqiColor] = useState(null);
   const [location, setLocation] = useState(null);
-  const [showMap, setShowMap] = useState(false);
-
-  const fetchWeeklydata = async (lat, lon) => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `http://ec2-3-92-135-32.compute-1.amazonaws.com:8000/HistoryAQIData?lat=${lat}&lon=${lon}`
-      );
-      const data = await response.json();
-      setAqiWeeklyData(data);
-      setLoading(false);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const fetchMonthlydata = async (lat, lon) => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `http://ec2-3-92-135-32.compute-1.amazonaws.com:8000/HistoryAQIDataMonthly?lat=${lat}&lon=${lon}`
-      );
-      const data = await response.json();
-      setAqiMonthlyData(data);
-
-      setLoading(false);
-    } catch (err) {
-      console.log(err);
-    }
-  };
 
   const fetchAQIFromLocation = async () => {
     try {
@@ -86,8 +51,6 @@ export default function ForecastScreen() {
       // Optionally include other fields like dominant pollutant and rural AQI
       dataObj.dominant_pollutant = res.data.dominant_pollutant;
       dataObj.rural_aqi = res.data.rural_aqi;
-      setAqiColor(getAQIColorHex(dataObj["rural_aqi"]));
-      setHealthTips(getHealthTips(dataObj["rural_aqi"]));
       const data = {
         aqi: dataObj["rural_aqi"],
         pm25: dataObj["PM2.5"],
@@ -122,9 +85,10 @@ export default function ForecastScreen() {
       if (data) {
         setLocation(JSON.parse(data));
       }
-      // console.log("Location ", JSON.parse(data));
-      // await fetchAQIFromLocation();
-      // await fetchAQIData();
+      console.log("Location ", JSON.parse(data));
+      await fetchAQIFromLocation(JSON.parse(data));
+      await fetchAQIData(JSON.parse(data));
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching location from AsyncStorage:", error);
     }
@@ -266,11 +230,8 @@ export default function ForecastScreen() {
       dominant_pollutant: dominantPollutant,
     };
   };
-  async function fetchAQIData() {
+  async function fetchAQIData(location) {
       try {
-        await fetchWeeklydata(location.lat, location.lon);
-        await fetchMonthlydata(location.lat, location.lon);
-
         const pollutants = await fetchaqiPollutants(
           location.lat, location.lon
         );
@@ -312,49 +273,8 @@ export default function ForecastScreen() {
       },
     ],
   };
-  const formattedWeekly = aqiWeeklyData
-    ? Object.entries(aqiWeeklyData).map(([date, value]) => ({
-        date: new Date(date).toLocaleDateString("en-US", {
-          month: "short",
-          day: "2-digit",
-        }),
-        aqi: value.AQI,
-      }))
-    : [];
 
-  const weeklyChartData = {
-    labels: formattedWeekly.map((item) => item.date),
-    datasets: [
-      {
-        data: formattedWeekly.map((item) => item.aqi),
-        strokeWidth: 2,
-      },
-    ],
-  };
-
-  const formattedMonthly = aqiMonthlyData
-    ? Object.entries(aqiMonthlyData).map(([date, value]) => ({
-        date: new Date(date).toLocaleDateString("en-US", {
-          month: "short",
-          day: "2-digit",
-        }),
-        aqi: value.AQI,
-      }))
-    : [];
-
-  const monthlyChartData = {
-    labels: formattedMonthly.map((item) => item.date),
-    datasets: [
-      {
-        data: formattedMonthly.map((item) => item.aqi),
-        strokeWidth: 2,
-      },
-    ],
-  };
-
-  const chartData = chartType === "weekly" ? weeklyChartData : monthlyChartData;
-
-  if (loading || !aqiWeeklyData || !aqiMonthlyData || !aqiOverallData) {
+  if (loading || !aqiOverallData) {
     return <Loader text="Loading Data..." />;
   }
 
@@ -363,67 +283,6 @@ export default function ForecastScreen() {
       <Text className="mb-5 text-2xl font-bold">Weekly AQI Overview</Text>
       <View className="justify-center flex-1 bg-white">
         <LocationData location={location.name}/>
-      </View>
-
-      <View className="px-4 mt-4">
-        {/* Tab Buttons */}
-        <View className="flex-row justify-center p-1 mb-4 bg-gray-200 rounded-full">
-          <TouchableOpacity
-            onPress={() => setChartType("weekly")}
-            className={`flex-1 py-2 rounded-full ${
-              chartType === "weekly" ? "bg-indigo-500" : ""
-            }`}
-          >
-            <Text
-              className={`text-center font-semibold ${
-                chartType === "weekly" ? "text-white" : "text-gray-700"
-              }`}
-            >
-              Weekly
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setChartType("monthly")}
-            className={`flex-1 py-2 rounded-full ${
-              chartType === "monthly" ? "bg-indigo-500" : ""
-            }`}
-          >
-            <Text
-              className={`text-center font-semibold ${
-                chartType === "monthly" ? "text-white" : "text-gray-700"
-              }`}
-            >
-              Monthly
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* AQI Chart */}
-        <ScrollView horizontal>
-          <LineChart
-            data={chartData}
-            width={
-              chartType == "monthly"
-                ? formattedMonthly.length * 50
-                : formattedWeekly.length * 60
-            } // Adjust width based on number of data points
-            height={220}
-            chartConfig={{
-              backgroundGradientFrom: "#ffffff",
-              backgroundGradientTo: "#ffffff",
-              decimalPlaces: 0,
-              color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
-              labelColor: () => "#111827",
-              propsForDots: {
-                r: "4",
-                strokeWidth: "1",
-                stroke: "#3b82f6",
-              },
-            }}
-            bezier
-            style={{ borderRadius: 12 }}
-          />
-        </ScrollView>
       </View>
 
       <View className="px-4 mt-10">

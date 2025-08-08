@@ -14,12 +14,6 @@ import { PollutantBar } from "../components/PollutantBar";
 const screenWidth = Dimensions.get("window").width;
 const pollutants = ["aqi", "pm25", "co", "pm10", "no2", "so2", "o3"];
 
-const aqiData = {
-  "2025-07-02": 42,
-  "2025-07-04": 186,
-  "2025-07-10": 290,
-};
-
 const getAQICategory = (v) =>
   v <= 50
     ? "Good"
@@ -173,6 +167,7 @@ const AQITrendsScreen = () => {
   const [selectedMetric, setSelectedMetric] = useState("aqi");
   const [showMap, setShowMap] = useState(false);
   const [weeklyData, setWeeklyData] = useState([]);
+  const [monthlyData, setMonthlyData] = useState([]);
   const [categoryDistribution, setCategoryDistribution] = useState({});
   const [loading, setLoading] = useState(true);
   const isFocused = useIsFocused();
@@ -202,9 +197,25 @@ const AQITrendsScreen = () => {
       setWeeklyData(transformed);
       const categoryWise = calculateCategoryDistribution(transformed);
       setCategoryDistribution(categoryWise);
-      setLoading(false);
     } catch (error) {
       console.error("Failed to fetch weekly AQI data", error);
+    }
+  };
+
+  const fetchMonthlydata = async (loc) => {
+    try {
+      let { lat, lon } = loc;
+      console.log("Monthly", lat, lon);
+      setLoading(true);
+      const response = await fetch(
+        `http://ec2-3-92-135-32.compute-1.amazonaws.com:8000/HistoryAQIDataMonthly?lat=${lat}&lon=${lon}`
+      );
+      const data = await response.json();
+      setMonthlyData(data);
+      console.log("Monthly : ", data);
+      setLoading(false);
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -244,12 +255,33 @@ const AQITrendsScreen = () => {
       setLocation(JSON.parse(loc));
     }
     console.log(loc);
-    await fetchWeeklyAQIData(JSON.parse(loc));
+    fetchWeeklyAQIData(JSON.parse(loc));
+    fetchMonthlydata(JSON.parse(loc));
   };
 
   useEffect(() => {
     fetchLocation();
   }, [isFocused]);
+
+  const formattedMonthly = monthlyData
+    ? Object.entries(monthlyData).map(([date, value]) => ({
+        date: new Date(date).toLocaleDateString("en-US", {
+          month: "short",
+          day: "2-digit",
+        }),
+        aqi: value.AQI,
+      }))
+    : [];
+
+  const monthlyChartData = {
+    labels: formattedMonthly.map((item) => item.date),
+    datasets: [
+      {
+        data: formattedMonthly.map((item) => item.aqi),
+        strokeWidth: 2,
+      },
+    ],
+  };
 
   if (loading) {
     return <Loader />;
@@ -375,14 +407,13 @@ const AQITrendsScreen = () => {
         />
       </View>
 
-          <View className="p-4 mb-10 bg-white shadow-2xl rounded-xl">
-<Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 10 }}>
-        Pollution Bar of {selectedMetric.toUpperCase()}
-      </Text>
-      <PollutantBar pollutant={selectedMetric} value={80} />
+      <View className="p-4 mb-10 bg-white shadow-2xl rounded-xl">
+        <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 10 }}>
+          Pollution Bar of {selectedMetric.toUpperCase()}
+        </Text>
+        <PollutantBar pollutant={selectedMetric} value={80} />
+      </View>
 
-          </View>
-      
       {/* <PollutantBar pollutant="pm25" value={36.5} /> */}
 
       {/* Category Distribution */}
@@ -424,12 +455,11 @@ const AQITrendsScreen = () => {
         <Calendar
           markingType="custom"
           markedDates={Object.fromEntries(
-            Object.entries(aqiData).map(([date, aqi]) => [
+            Object.entries(monthlyData).map(([date, obj]) => [
               date,
               {
                 customStyles: {
                   container: {
-                    backgroundColor: getAQIColorHex(aqi),
                     borderRadius: 100, // circular
                     width: 32,
                     height: 32,
@@ -446,7 +476,8 @@ const AQITrendsScreen = () => {
             ])
           )}
           dayComponent={({ date, state }) => {
-            const aqi = aqiData[date.dateString];
+            
+            const aqi = monthlyData[date.dateString]?.AQI;
 
             return (
               <View style={{ alignItems: "center" }}>
@@ -455,7 +486,6 @@ const AQITrendsScreen = () => {
                     backgroundColor: aqi ? getAQIColorHex(aqi) : "transparent",
                     width: 32,
                     height: 32,
-                    borderRadius: 5,
                     alignItems: "center",
                     justifyContent: "center",
                   }}
