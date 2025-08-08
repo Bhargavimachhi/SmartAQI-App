@@ -1,21 +1,17 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useIsFocused } from "@react-navigation/native";
 import axios from "axios";
-import * as Location from "expo-location";
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import Loader from "../components/Loader";
-import LocationPickerButton from "../components/LocationPickerButton";
-import LocationPickerMap from "../components/LocationPickerMap";
 import LocationData from "../components/LocationData";
-import { useIsFocused } from "@react-navigation/native";
 
 export default function HealthAdvisoryScreen() {
   const [hospitals, setHospitals] = useState([]);
   const [location, setLocation] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showMap, setShowMap] = useState(false);
   const isFocused = useIsFocused();
 
   const getNearestHospitals = async (loc) => {
@@ -23,7 +19,7 @@ export default function HealthAdvisoryScreen() {
       const lat = loc.lat;
       const lon = loc.lon;
       setLocation({ lat, lon });
-      console.log("Hopital", lon, lat);
+      // console.log("Hopital", lon, lat);
 
       const res = await axios.get(
         `http://ec2-3-92-135-32.compute-1.amazonaws.com:8000/getnearesthospitals?lat=${lat}&lon=${lon}`

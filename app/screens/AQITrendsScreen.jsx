@@ -174,12 +174,10 @@ const AQITrendsScreen = () => {
 
   const fetchWeeklyAQIData = async (loc) => {
     try {
-      console.log("started");
       const response = await axios.get(
         `http://ec2-3-92-135-32.compute-1.amazonaws.com:8000/HistoryAQIData?lat=${loc.lat}&lon=${loc.lon}`
       );
       const data = response.data;
-      console.log(data);
       const transformed = Object.entries(data).map(([date, values]) => {
         const pollutants = values.pollutants || {};
         return {
@@ -205,14 +203,12 @@ const AQITrendsScreen = () => {
   const fetchMonthlydata = async (loc) => {
     try {
       let { lat, lon } = loc;
-      console.log("Monthly", lat, lon);
       setLoading(true);
       const response = await fetch(
         `http://ec2-3-92-135-32.compute-1.amazonaws.com:8000/HistoryAQIDataMonthly?lat=${lat}&lon=${lon}`
       );
       const data = await response.json();
       setMonthlyData(data);
-      console.log("Monthly : ", data);
       setLoading(false);
     } catch (err) {
       console.log(err);
@@ -254,7 +250,6 @@ const AQITrendsScreen = () => {
     if (loc) {
       setLocation(JSON.parse(loc));
     }
-    console.log(loc);
     fetchWeeklyAQIData(JSON.parse(loc));
     fetchMonthlydata(JSON.parse(loc));
   };
@@ -418,7 +413,7 @@ const AQITrendsScreen = () => {
 
       {/* Category Distribution */}
       {categoryDistribution[selectedMetric] && (
-        <View className="p-4 mb-10 mt-5 bg-white shadow-2xl rounded-xl">
+        <View className="p-4 mt-5 mb-10 bg-white shadow-2xl rounded-xl">
           <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 10 }}>
             Category Distribution of {selectedMetric.toUpperCase()}
           </Text>

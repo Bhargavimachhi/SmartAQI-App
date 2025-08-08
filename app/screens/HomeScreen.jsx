@@ -1,14 +1,13 @@
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useIsFocused } from "@react-navigation/native";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { ProgressBar } from "react-native-paper";
 import Loader from "../components/Loader";
-import Location from "../components/LocationData";
-import { PollutantBar } from "../components/PollutantBar";
-import { useIsFocused } from "@react-navigation/native";
 import LocationData from "../components/LocationData";
+import { PollutantBar } from "../components/PollutantBar";
 
 const getAQIColorHex = (aqi) => {
   if (aqi <= 50) return "#4ade80";
@@ -61,13 +60,12 @@ const getHealthTips = (aqi) => {
 };
 
 export default function HomeScreen() {
+  const isFocused = useIsFocused();
   const [aqiData, setAqiData] = useState(null);
   const [healthTips, setHealthTips] = useState(null);
   const [aqiColor, setAqiColor] = useState(null);
   const [location, setLocation] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showMap, setShowMap] = useState(false);
-  const isFocused = useIsFocused();
 
   async function fetchAQIFromLocation(loc) {
     try {
@@ -113,7 +111,6 @@ export default function HomeScreen() {
       };
       setAqiData(data);
       setLoading(false);
-      console.log(data);
     } catch (err) {
       console.log(err);
       console.log(JSON.stringify(err));
@@ -126,7 +123,6 @@ export default function HomeScreen() {
       if (data) {
         setLocation(JSON.parse(data));
       }
-      console.log("Location ", JSON.parse(data));
       fetchAQIFromLocation(JSON.parse(data));
     } catch (error) {
       console.error("Error fetching location from AsyncStorage:", error);
